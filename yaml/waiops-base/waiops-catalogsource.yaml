@@ -1,0 +1,14 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: ibm-watson-aiops-catalog
+  namespace: openshift-marketplace
+spec:
+  displayName: ibm-watson-aiops-catalog
+  publisher: IBM
+  sourceType: grpc
+  image: docker.io/ibmcom/ibm-operator-catalog:latest
+  updateStrategy:
+    registryPoll:
+      interval: 45m
+   

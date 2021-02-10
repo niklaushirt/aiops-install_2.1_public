@@ -1,0 +1,120 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: asm-topology
+  namespace: noi
+spec:
+  host: >-
+    asm.<CHANGE_URL>
+  path: /1.0/topology
+  to:
+    kind: Service
+    name: demo-noi-topology-topology
+    weight: 100
+  port:
+    targetPort: 8080
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: asm-layout
+  namespace: noi
+spec:
+  host: >-
+    asm.<CHANGE_URL>
+  path: /1.0/layout
+  to:
+    kind: Service
+    name: demo-noi-topology-layout
+    weight: 100
+  port:
+    targetPort: 7084
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: asm-merge
+  namespace: noi
+spec:
+  host: >-
+    asm.<CHANGE_URL>
+  path: /1.0/merge
+  to:
+    kind: Service
+    name: demo-noi-topology-merge
+    weight: 100
+  port:
+    targetPort: 7082
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: asm-search
+  namespace: noi
+spec:
+  host: >-
+    asm.<CHANGE_URL>
+  path: /1.0/search
+  to:
+    kind: Service
+    name: demo-noi-topology-search
+    weight: 100
+  port:
+    targetPort: 7080
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: asm-ui-api
+  namespace: noi
+spec:
+  host: >-
+    asm.<CHANGE_URL>
+  path: /1.0/ui-api
+  to:
+    kind: Service
+    name: demo-noi-topology-ui-api
+    weight: 100
+  port:
+    targetPort: 3080
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: asm-ui
+  namespace: noi
+spec:
+  host: >-
+    asm.<CHANGE_URL>
+  path: /aiops
+  to:
+    kind: Service
+    name: demo-noi-ibm-hdm-common-ui-uiserver
+    weight: 100
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

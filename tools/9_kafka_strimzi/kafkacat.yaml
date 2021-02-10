@@ -1,0 +1,44 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kafka-cat
+  namespace: zen
+  labels:
+    app: kafka-cat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-cat
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: kafka-cat
+    spec:
+      volumes:
+        - name: strimzi-cluster-cluster-ca-cert
+          secret:
+            secretName: strimzi-cluster-cluster-ca-cert
+            defaultMode: 420
+      containers:
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: kafka-cat
+          command:
+            - /bin/sh
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: strimzi-cluster-cluster-ca-cert
+              readOnly: true
+              mountPath: /root/certs2/
+          terminationMessagePolicy: File
+          image: confluentinc/cp-kafkacat
+          args:
+            - '-c'
+            - 'trap : TERM INT; sleep infinity & wait'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler

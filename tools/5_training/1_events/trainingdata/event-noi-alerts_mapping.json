@@ -1,0 +1,10 @@
+{
+  "mapping": {
+    "codec": "noi",
+    "instance_id_field": "alert.source.source_alert_id",
+    "log_entity_types": "pod,_cluster,container",
+    "message_field": "alert.title",
+    "timestamp_field": "timestamp",
+    "alert_max_file_size_mb": 100
+  }
+}

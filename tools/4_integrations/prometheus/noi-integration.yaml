@@ -1,0 +1,10 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: netcool-op-insight-event-integrations
+  namespace: noi
+spec:
+  displayName: ''
+  image: docker.io/ibmcom/ibm-netcool-integrations-operator-catalog
+  publisher: ''
+  sourceType: grpc

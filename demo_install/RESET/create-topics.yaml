@@ -1,0 +1,120 @@
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: derived-stories
+  namespace: zen
+  labels:
+    strimzi.io/cluster: strimzi-cluster
+spec:
+  config:
+    max.message.bytes: '1048588'
+    retention.ms: '1800000'
+    segment.bytes: '1073741824'
+  partitions: 1
+  replicas: 1
+  topicName: derived-stories
+
+
+
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: normalized-alerts-a7fnt4s6-q22ruydf
+  namespace: zen
+  labels:
+    strimzi.io/cluster: strimzi-cluster
+spec:
+  config:
+    max.message.bytes: '1048588'
+    retention.ms: '1800000'
+    segment.bytes: '1073741824'
+  partitions: 1
+  replicas: 1
+  topicName: normalized-alerts-a7fnt4s6-q22ruydf
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: windowed-logs-a7fnt4s6-q22ruydf
+  namespace: zen
+  labels:
+    strimzi.io/cluster: strimzi-cluster
+spec:
+  config:
+    max.message.bytes: '1048588'
+    retention.ms: '1800000'
+    segment.bytes: '1073741824'
+  partitions: 1
+  replicas: 1
+  topicName: windowed-logs-a7fnt4s6-q22ruydf
+
+
+
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: normalized-alerts-a7fnt4s6-p0ew17xn
+  namespace: zen
+  labels:
+    strimzi.io/cluster: strimzi-cluster
+spec:
+  config:
+    max.message.bytes: '1048588'
+    retention.ms: '1800000'
+    segment.bytes: '1073741824'
+  partitions: 1
+  replicas: 1
+  topicName: normalized-alerts-a7fnt4s6-p0ew17xn
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: windowed-logs-a7fnt4s6-p0ew17xn
+  namespace: zen
+  labels:
+    strimzi.io/cluster: strimzi-cluster
+spec:
+  config:
+    max.message.bytes: '1048588'
+    retention.ms: '1800000'
+    segment.bytes: '1073741824'
+  partitions: 1
+  replicas: 1
+  topicName: windowed-logs-a7fnt4s6-p0ew17xn
+
+
+
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: normalized-alerts-a7fnt4s6-81zvikm1
+  namespace: zen
+  labels:
+    strimzi.io/cluster: strimzi-cluster
+spec:
+  config:
+    max.message.bytes: '1048588'
+    retention.ms: '1800000'
+    segment.bytes: '1073741824'
+  partitions: 1
+  replicas: 1
+  topicName: normalized-alerts-a7fnt4s6-81zvikm1
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: windowed-logs-a7fnt4s6-81zvikm1
+  namespace: zen
+  labels:
+    strimzi.io/cluster: strimzi-cluster
+spec:
+  config:
+    max.message.bytes: '1048588'
+    retention.ms: '1800000'
+    segment.bytes: '1073741824'
+  partitions: 1
+  replicas: 1
+  topicName: windowed-logs-a7fnt4s6-81zvikm1
