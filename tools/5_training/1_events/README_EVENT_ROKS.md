@@ -1,4 +1,4 @@
-# AIOPS AI Manager - EVENT MODEL TRAINING ROKS CH
+# AIOPS AI Manager - EVENT MODEL TRAINING
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ mkdir -p /home/zeno/data/trainingdata/event/$appgroupid/$appid/$version/raw
 
 # Sockshop
 export appgroupid=a7fnt4s6
-export appid=81zvikm1
+export appid=kpwliwck
 export version=1
 
 mkdir -p /home/zeno/data/trainingdata/event/$appgroupid/$appid/$version/raw
@@ -76,7 +76,7 @@ oc cp ./tools/5_training/1_events/trainingdata/event-noi-alerts_mapping.json $(o
 
 # Sockshop
 export appgroupid=a7fnt4s6
-export appid=81zvikm1
+export appid=kpwliwck
 export version=1
 
 oc cp ./tools/5_training/1_events/trainingdata/raw/alerts-noi-sockshop.json $(oc get po |grep model-train-console|awk '{print $1}'):/home/zeno/data/trainingdata/event/$appgroupid/$appid/$version/raw/noi-alerts.json
@@ -138,7 +138,7 @@ python3 train_pipeline.pyc -p "event" -g "$appgroupid" -a "$appid" -v "$version"
 
 # Sockshop
 export appgroupid=a7fnt4s6
-export appid=81zvikm1
+export appid=kpwliwck
 export version=1
 
 cd /home/zeno/train/

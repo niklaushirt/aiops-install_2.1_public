@@ -90,9 +90,9 @@ export version=1
 bash index_incidents.sh s3://similar-incident-service/test-incidents_kubetoy.json $appgroupid $appid
 
 
-# Kubetoy
+# Sockshop
 export appgroupid=a7fnt4s6
-export appid=81zvikm1
+export appid=kpwliwck
 export version=1
 bash index_incidents.sh s3://similar-incident-service/test-incidents_sockshop.json $appgroupid $appid
 

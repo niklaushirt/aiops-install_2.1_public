@@ -258,17 +258,20 @@ header1End "Install Prerequisites"
 
 header1Begin "Install AIOPS AI Manager"
   
-
-        AI_MANAGER_INSTALLED=$(kubectl get -n zen AIManager -o yaml | grep "phase: \"Complete" || true) 
-
-        if [[ $AI_MANAGER_INSTALLED =~ "Complete" ]]; 
+        if [[ $INSTALL_WAIOPS_MGR == "true" ]]; 
         then
-            __output "     ${GREEN}${healthy} AIOPS AI Manager already installed... ${ORANGE}Skipping${NC}"
-        else
-            ./11_install_aiops_ai_manager.sh 
-            echo ""
-        fi
+            AI_MANAGER_INSTALLED=$(kubectl get -n zen AIManager -o yaml | grep "phase: \"Complete" || true) 
 
+            if [[ $AI_MANAGER_INSTALLED =~ "Complete" ]]; 
+            then
+                __output "     ${GREEN}${healthy} AIOPS AI Manager already installed... ${ORANGE}Skipping${NC}"
+            else
+                ./11_install_aiops_ai_manager.sh 
+                echo ""
+            fi
+        else
+            __output "     ${ORANGE}${cross} AIOPS Event Manager (NOI) not activated... Skipping${NC}"
+        fi
 
 
 header1End "Install AIOPS AI Manager"

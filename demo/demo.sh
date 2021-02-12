@@ -1,87 +1,138 @@
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ADAPT VALUES in ./01_config.sh
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# DO NOT EDIT BELOW
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-source ./99_config-global.sh
 
-#!/bin/bash
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+source ./demo/01_config.sh
+
 menu_option_one () {
+  echo "Simulate failure in BookInfo App (stop Ratings service)"
+  ./demo/bookinfo/simulate-incident.sh
+}
+
+menu_option_two() {
+  echo "Simulate failure in Kubetoy App (Liveness Probe error )"
+  ./demo/kubetoy/simulate-incident.sh
+}
+
+menu_option_three() {
+  echo "Simulate failure in SockShop App (stop Catalogue Service)"
+  echo "	Press Enter to start, press CTRL-C to stop "
+  ./demo/sockshop/simulate-incident.sh
+}
+
+menu_option_four() {
+  echo "Create repeated Liveness Probe error in Kubetoy App"
+  ./demo/kubetoy/create-incident.sh #1>/dev/null 2>&1
+
+}
+
+menu_option_five() {
   echo "Create failure in BookInfo App (stop Ratings service)"
   ./demo/bookinfo/create-incident.sh
 }
 
-menu_option_two() {
-  echo "Create failure in SockShop App (stop Catalogue service)"
+menu_option_six() {
+  echo "Create failure in Sockshop App (stop Ratings service)"
   ./demo/sockshop/create-incident.sh
 }
 
-menu_option_three() {
-  echo "Create repeated Liveness Probe error in Kubetoy App"
-  ./demo/kubetoy/create-incident.sh #1>/dev/null 2>&1
-}
-menu_option_four() {
-  echo "Not implemented"
-}
-menu_option_five() {
+
+menu_option_11() {
   echo "Mitigate failure in BookInfo App (start Ratings service)"
   ./demo/bookinfo/remove-incident.sh
-
 }
-menu_option_six() {
-  echo "Mitigate failure in SockShop App (start Catalogue service)"
+
+menu_option_12() {
+  echo "Mitigate failure in Sockshop App (start Ratings service)"
   ./demo/sockshop/remove-incident.sh
-
 }
+
 menu_option_seven() {
   echo "Not implemented"
 
 }
 
 
-
-press_enter() {
-  echo ""
-  echo "	Press Enter to continue "
-  read
-  clear
-}
-
-incorrect_selection() {
-  echo "Incorrect selection! Try again."
-}
-
-get_sed(){
-  # fix sed issue on mac
-  OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-  SED="sed"
-  if [ "${OS}" == "darwin" ]; then
-      SED="gsed"
-      if [ ! -x "$(command -v ${SED})"  ]; then
-      __output "This script requires $SED, but it was not found.  Perform \"brew install gnu-sed\" and try again."
-      exit
-      fi
-  fi
-}
-
-
-
 clear
 get_sed
 
 
-echo "***************************************************************************************************************************************************"
-echo "***************************************************************************************************************************************************"
-echo "***************************************************************************************************************************************************"
-echo "***************************************************************************************************************************************************"
-echo ""
-echo " ${rocket} AI OPS Demo${NC}"
-echo ""
-echo "***************************************************************************************************************************************************"
-echo "***************************************************************************************************************************************************"
-echo "***************************************************************************************************************************************************"
+echo "${CYAN}***************************************************************************************************************************************************"
+echo "${CYAN}***************************************************************************************************************************************************"
+echo "${CYAN}***************************************************************************************************************************************************"
+echo "${CYAN}***************************************************************************************************************************************************"
+echo "${CYAN}"
+echo "${CYAN} ${rocket} AI OPS Demo${NC}"
+echo "${CYAN}"
+echo "${CYAN}***************************************************************************************************************************************************"
+echo "${CYAN}***************************************************************************************************************************************************"
+echo "${CYAN}***************************************************************************************************************************************************"
 
-CLUSTER_ROUTE=$(kubectl get routes console -n openshift-console | tail -n 1 2>&1 ) 
-CLUSTER_FQDN=$( echo $CLUSTER_ROUTE | awk '{print $2}')
-export OCP_CONSOLE_PREFIX=console-openshift-console
-export CLUSTER_NAME=$(echo $CLUSTER_FQDN | ${SED} "s/$OCP_CONSOLE_PREFIX.//")
-echo "  ${telescope}  Cluster URL: $CLUSTER_NAME"
+echo "${NC}  Initializing......"
+
+echo "  Checking K8s connection......"
+checkK8sConnection
 
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
@@ -93,15 +144,19 @@ until [ "$selection" = "0" ]; do
   
   echo ""
   
-  echo "  ${fail} Create Service Failures "
-  echo "    	1  - [BookInfo] Create failure in BookInfo App (stop Ratings service)"
-  echo "    	2  - [Sockshop] Create failure in SockShop App (stop Catalogue service)   "
-  echo "    	3  - [Kubetoy] Create repeated Liveness Probe error in Kubetoy App"
+  echo "  ${fail} ${RED}Create Service Failures ${NC}"
+  echo "    	1  - ${CYAN}[BookInfo]${NC} ${ORANGE}Simulate failure in BookInfo App (inject failure logs)${NC}"
+  echo "    	2  - ${CYAN}[Kubetoy]${NC}  ${ORANGE}Simulate Liveness Probe error in Kubetoy App${NC}"
+  echo "    	3  - ${CYAN}[Sockshop]${NC} ${ORANGE}Simulate failure in SockShop App (stop Catalogue service)${NC}"
+  echo "    	4  - ${CYAN}[Kubetoy]${NC}  ${RED}Create repeated Liveness Probe error in Kubetoy App${NC}"
+  echo "    	5  - ${CYAN}[BookInfo]${NC} ${RED}Create failure in BookInfo App (stop Ratings service)${NC}"
+  echo "    	6  - ${CYAN}[Sockshop]${NC} ${RED}Create failure in SockShop App (stop Catalogue service)${NC}"
+
   echo "      "
   echo ""
-  echo "  ${healthy} Mitigate Service Failures "
-  echo "    	5  - [BookInfo] Mitigate failure in BookInfo App (start Ratings service)"
-  echo "    	6  - [Sockshop] Mitigate failure in SockShop App (start Catalogue service)"
+  echo "  ${healthy} ${GREEN}Mitigate Service Failures ${NC}"
+  echo "    	11  - ${CYAN}[BookInfo]${NC} ${GREEN}Mitigate failure in BookInfo App (start Ratings service)${NC}"
+  echo "    	12  - ${CYAN}[Sockshop]${NC} ${GREEN}Mitigate failure in Sockshop App (start Catalogue service)${NC}"
   echo "" 
   echo ""
   echo "    	0  -  Exit"
@@ -118,45 +173,10 @@ until [ "$selection" = "0" ]; do
     4 ) clear ; menu_option_four ; press_enter ;;
     5 ) clear ; menu_option_five ; press_enter ;;
     6 ) clear ; menu_option_six ; press_enter ;;
-    7 ) clear ; menu_option_seven ; press_enter ;;
+    11 ) clear ; menu_option_11 ; press_enter ;;
+    12 ) clear ; menu_option_12 ; press_enter ;;
     0 ) clear ; exit ;;
     * ) clear ; incorrect_selection ; press_enter ;;
   esac
 done
 
-
-
-
-
-
-
-
-
-
-export beer='\xF0\x9f\x8d\xba'
-export delivery='\xF0\x9F\x9A\x9A'
-export beers='\xF0\x9F\x8D\xBB'
-export eyes='\xF0\x9F\x91\x80'
-export cloud='\xE2\x98\x81'
-export crossbones='\xE2\x98\xA0'
-export litter='\xF0\x9F\x9A\xAE'
-export fail='\xE2\x9B\x94'
-export harpoons='\xE2\x87\x8C'
-export tools='\xE2\x9A\x92'
-export present='\xF0\x9F\x8E\x81'
-
-export telescope='\xF0\x9F\x94\xAD'
-export globe='\xF0\x9F\x8C\x90'
-export clock='\xF0\x9F\x95\x93'
-export wrench='\xF0\x9F\x94\xA7'
-export key='\xF0\x9F\x94\x90'
-export magnifying='\xF0\x9F\x94\x8D'
-export package='\xF0\x9F\x93\xA6'
-export memo='\xF0\x9F\x93\x9D'
-export explosion='\xF0\x9F\x92\xA5'
-export rocket='\xF0\x9F\x9A\x80'
-export cross='\xE2\x9D\x8C'
-export healthy='\xE2\x9C\x85'
-export whitequestion='\xE2\x9D\x93'
-export hand='\xE2\x9C\x8B'
-export exclamation='\xE2\x9D\x97'

@@ -1,5 +1,5 @@
 {
-    "description": "resource.name=\\\"ratings\\\" severity=Critical resource.hostname=ratings type.eventType=\\\"bookinfo\\\"",
+    "description": "resource.name=\\\"ratings\\\" severity=Major resource.hostname=ratings type.eventType=\\\"bookinfo\\\"",
     "id": "qGQ1ch6f0kr5hoEIxDH85KSrjnvbGZGD",
     "labels": [],
     "lastAlarm": 1612888435036,

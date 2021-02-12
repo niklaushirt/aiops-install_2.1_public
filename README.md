@@ -1,9 +1,4 @@
-# Watson AIOps Demo Environment Installation
-
-
-
-This is a collection of my scripts to install Watson AIOps.
-
+# Watson AIOps Demo Environment Installation 
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -72,7 +67,21 @@ oc apply -n bookinfo -f ./demo_install/bookinfo/virtual-service-reviews-100-v2.y
 oc apply -n default -f ./demo_install/bookinfo/bookinfo-create-load.yaml
 ```
 
+#### Create Log Inject for Demo
 
+In AI Manager on the App:
+Create Ops Integration --> Apache Kafka --> Next --> Logs / Humio and use the mapping:
+
+```yaml
+{
+    "rolling_time": 10,
+    "instance_id_field": "kubernetes.container_name",
+    "log_entity_types": "kubernetes.namespace_name,kubernetes.container_hash,kubernetes.host,kubernetes.container_name,kubernetes.pod_name",
+    "message_field": "@rawstring",
+    "timestamp_field": "@timestamp"
+}
+```
+Adapt the file ./demo/bookinfo/demo.sh with the given Topic
 
 ### Install Kubetoy
 
@@ -197,6 +206,12 @@ In the container part (same level as name)
           privileged: true
 ```
 
+You can do this by executing:
+```bash
+kubectl patch DaemonSet humio-fluentbit-fluentbit -n humio-logging -p '{"spec": {"template": {"spec": {"containers": [{"name": "humio-fluentbit","image": "fluent/fluent-bit:1.4.2","securityContext": {"privileged": true}}]}}}}' --type=merge
+```
+
+
 ### Configure Humio Alerts
 
 
@@ -223,7 +238,7 @@ In the container part (same level as name)
 
 Last 5s
 
-resource.name=\"ratings\" severity=Critical resource.hostname=ratings type.eventType=\"bookinfo\"
+resource.name=\"ratings\" severity=Major resource.hostname=ratings type.eventType=\"bookinfo\"
 ```
 
 #### BookinfoRatingsDown
@@ -246,7 +261,7 @@ resource.name=\"ratings\" severity=Critical resource.hostname=ratings-v1 type.ev
 
 Last 5s
 
-resource.name=\"reviews\" severity=Critical resource.hostname=reviews-v2 type.eventType=\"bookinfo\"
+resource.name=\"reviews\" severity=Major resource.hostname=reviews-v2 type.eventType=\"bookinfo\"
 ```
 
 #### KubetoyLivenessProbe
@@ -267,7 +282,7 @@ resource.name=\"kubetoy-deployment\" severity=Critical resource.hostname=kubetoy
 
 Last 20s
 
-resource.name=\"kubetoy-deployment\" severity=Critical resource.hostname=kubetoy-service type.eventType=\"kubetoy\"
+resource.name=\"kubetoy-deployment\" severity=Major resource.hostname=kubetoy-service type.eventType=\"kubetoy\"
 ```
 
 
@@ -525,6 +540,15 @@ Add Listener to Strimzi Operator CR in Namespace zen: Modify CR
         type: route
 ```
 
+You can do this with this command:
+
+```bash
+kubectl patch Kafka strimzi-cluster -n zen -p '{"spec": {"kafka": {"listeners": {"external": {"type": "route"}}}}}' --type=merge
+```
+
+
+
+
 ### Copy secret strimzi-cluster-cluster-ca-cert
 
 Copy secret strimzi-cluster-cluster-ca-cert - from  zen to noi
@@ -773,6 +797,8 @@ Get it from Humio --> Owl in the top right corner --> Your Account --> API Token
 kubernetes.namespace_name="bookinfo"
 
 #### Mapping
+
+```yaml
 {
     "rolling_time": 10,
     "instance_id_field": "kubernetes.container_name",
@@ -780,7 +806,7 @@ kubernetes.namespace_name="bookinfo"
     "message_field": "@rawstring",
     "timestamp_field": "@timestamp"
 }
-
+```
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## NOI Connection from AI Manager (Ops Integration)
@@ -848,6 +874,11 @@ with
 initial_admin_password: UDRzc3cwcmQh
 
 Restart Pod: 
+
+
+# Demo Assets
+
+Make sure you have updated the config file ./demo/01_config.sh
 
 
 

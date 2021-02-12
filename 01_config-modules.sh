@@ -18,6 +18,9 @@
     # Watson AIOps AI Manager
     # ---------------------------------------------------------------------------------------------------------------------------------------------------"
 
+         # Install AIOPS AI Manager 
+        export INSTALL_WAIOPS_MGR=true
+
         # WAIOPS Storage Class (ibmc-file-gold-gid, nfs-client, ...)
         export WAIOPS_AI_MGR_STORAGE_CLASS_FILE=ibmc-file-gold-gid
         #export WAIOPS_AI_MGR_STORAGE_CLASS_FILE=nfs-client

@@ -33,7 +33,7 @@ spec:
           - name: PORT
             value : "22"
           - name: SSH_KEY
-            value : "CHANGE_ME"
+            value : "22"
 ---
 apiVersion: v1
 kind: Service

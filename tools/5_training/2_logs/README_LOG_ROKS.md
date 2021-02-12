@@ -28,7 +28,7 @@ mkdir -p /home/zeno/data/trainingdata/log/$appgroupid/$appid/$version/
 
 # Sockshop
 export appgroupid=a7fnt4s6
-export appid=81zvikm1
+export appid=kpwliwck
 export version=1
 
 mkdir -p /home/zeno/data/trainingdata/log/$appgroupid/$appid/$version/
@@ -52,7 +52,7 @@ oc cp ./tools/5_training/2_logs/trainingdata/logs-humio-mapping.json $(oc get po
 
 # Sockshop
 export appgroupid=a7fnt4s6
-export appid=81zvikm1
+export appid=kpwliwck
 export version=1
 
 oc cp ./tools/5_training/2_logs/trainingdata/raw/log-sockshop.json $(oc get po |grep model-train-console|awk '{print $1}'):/home/zeno/data/trainingdata/log/$appgroupid/$appid/$version/
@@ -104,7 +104,7 @@ python3 train_pipeline.pyc -p "log" -g "$appgroupid" -a "$appid" -v "$version"
 
 # Sockshop
 export appgroupid=a7fnt4s6
-export appid=81zvikm1
+export appid=kpwliwck
 export version=1
 
 

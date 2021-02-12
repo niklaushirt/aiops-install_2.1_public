@@ -1,5 +1,5 @@
 {
-  "description": "resource.name=\\\"kubetoy-deployment\\\" severity=Critical resource.hostname=kubetoy-service type.eventType=\\\"kubetoy\\\"",
+  "description": "resource.name=\\\"kubetoy-deployment\\\" severity=Major resource.hostname=kubetoy-service type.eventType=\\\"kubetoy\\\"",
   "id": "3GflNMWiqAh6CxYB5hNtCN4yNxqOmMQo",
   "labels": [],
   "lastAlarm": 1612888225058,
