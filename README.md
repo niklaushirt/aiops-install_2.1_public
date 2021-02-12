@@ -1,4 +1,24 @@
-# Watson AIOps Demo Environment Installation 
+# Watson AIOps Demo Environment Installation
+
+1. [AI and Event Manager Base Install](#toc_5)
+1. [Install Istio](#toc_4)
+1. [Install Demo Apps](#toc_5)
+1. [Install Humio](#toc_12)
+1. [Configure Event Manager / ASM Topology](#toc_30)
+1. [Install Event Manager Gateway](#toc_42)
+1. [Create ASM Integration in AI Manager](#toc_48)
+1. [Some Housekeeping](#toc_56)
+1. [Train the Models](#toc_60)
+1. [Humio Connection from AI Manager (Ops Integration)](#toc_62)
+1. [NOI Connection from AI Manager (Ops Integration)](#toc_68)
+1. [Slack integration](#toc_69)
+1. [Some Polishing](#toc_71)
+1. [Install Secure Gateway (not on ROKS)](#toc_75)
+
+
+
+
+
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -356,13 +376,17 @@ resource.name=\"sockshop\" severity=Critical resource.hostname=sockshop type.eve
 
 ### Create K8s Observers
 
-For each DemoApp (bookinfo, kubetoy, sock-shop) create observer:
+For each DemoApp (bookinfo, kubetoy) create observer:
 
 * Administration --> Topology Management --> ObserverJobs Configure --> Add new Job / Kubernetes"
 * Terminated Pods: true
 * Correlate: true
 * Namespace: <The one for the app>
 * Time interval: Once
+
+> Note you might want to create manual Topology for sock-shop
+> 
+> Launch `./demo/maintenance.sh` and select option `11`
 
 ### Create Match Tokens Rules
 
@@ -601,7 +625,7 @@ kubectl apply -n noi -f ./tools/3_integrationgateway/nikh-sockshop-demo-noi-aimg
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Create ASM Integration
+## Create ASM Integration in AI Manager
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
