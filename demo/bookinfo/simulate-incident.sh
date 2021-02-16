@@ -2,6 +2,7 @@ echo "Simulating Bookinfo Ratings outage"
 
 
 
+
 input="./demo/bookinfo/error_event.json"
 while IFS= read -r line
 do
@@ -25,6 +26,7 @@ echo ""
 echo "Injecting error Logs"
 echo "${ORANGE}Quit with Ctrl-Z${NC}"
 
+export LOGS_TOPIC=logs-humio-$appgroupid1-$appid1
 
 mv ca.crt ca.crt.old
 oc extract secret/strimzi-cluster-cluster-ca-cert -n zen --keys=ca.crt

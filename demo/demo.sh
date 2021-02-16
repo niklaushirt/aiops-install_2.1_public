@@ -144,14 +144,15 @@ until [ "$selection" = "0" ]; do
   
   echo ""
   
-  echo "  ${fail} ${RED}Create Service Failures ${NC}"
+  echo "  ${beer} ${ORANGE}Simulate Service Failures ${NC}"
   echo "    	1  - ${CYAN}[BookInfo]${NC} ${ORANGE}Simulate failure in BookInfo App (inject failure logs)${NC}"
   echo "    	2  - ${CYAN}[Kubetoy]${NC}  ${ORANGE}Simulate Liveness Probe error in Kubetoy App${NC}"
-  echo "    	3  - ${CYAN}[Sockshop]${NC} ${ORANGE}Simulate failure in SockShop App (stop Catalogue service)${NC}"
+  echo "    	3  - ${CYAN}[Sockshop]${NC} ${ORANGE}Simulate failure in SockShop App (inject failure logs)${NC}"
+  echo "      "
+  echo "  ${fail} ${RED}Create Service Failures ${NC}"
   echo "    	4  - ${CYAN}[Kubetoy]${NC}  ${RED}Create repeated Liveness Probe error in Kubetoy App${NC}"
   echo "    	5  - ${CYAN}[BookInfo]${NC} ${RED}Create failure in BookInfo App (stop Ratings service)${NC}"
   echo "    	6  - ${CYAN}[Sockshop]${NC} ${RED}Create failure in SockShop App (stop Catalogue service)${NC}"
-
   echo "      "
   echo ""
   echo "  ${healthy} ${GREEN}Mitigate Service Failures ${NC}"

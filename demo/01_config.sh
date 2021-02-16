@@ -9,24 +9,22 @@
 
 
 
-export NETCOOL_WEBHOOK=https://netcool.demo-noi.aiops-a376efc1170b9b8ace6422196c51e491-0000.par01.containers.appdomain.cloud/norml/webhook/humio/cfd95b7e-3bc7-4006-a4a8-a73a79c71255/65799dc4-1510-4618-9440-1e6090a30504/npeOBVlsHLYs-sH9Rjie2pA9XOWBxHe8UwaQVfRfxao
+export NETCOOL_WEBHOOK=https://netcool.demo-noi.aiopsch-a376efc1170b9b8ace6422196c51e491-0000.us-south.containers.appdomain.cloud/norml/webhook/humio/cfd95b7e-3bc7-4006-a4a8-a73a79c71255/98503f2e-b95d-4a13-a798-b4bb2f47e40c/Bvii7CKKBzTpLeeDBzru95KET6i6I_fU9zjO34zFTa8
 
 
-
-export appgroupid=a7fnt4s6
 # Bookinfo
-export appid1=q22ruydf
+export appgroupid1=zvqubqka
+export appid1=yqyy711o
 # Kubetoy
-export appid2=p0ew17xn
+export appgroupid2=3bglxest
+export appid2=3bglxest
 # Sockshop
-export appid3=81zvikm1
-
-# Bookinfo
-export LOGS_TOPIC=logs-humio-$appgroupid-$appid1
+export appgroupid3=k8muiz8w
+export appid3=emjei3wm
 
 # Only for Topology Load
 export NOI_REST_USR=demo-noi-topology-noi-user
-export NOI_REST_PWD=BuvJ7ujKea7wPK0XasTK2Wr/OX1K1HkmodmCKTd4CuE=
+export NOI_REST_PWD=NO+zKS6/MdeHthdGKki2cLIytUK6j43BApUKwYppJ3o=
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

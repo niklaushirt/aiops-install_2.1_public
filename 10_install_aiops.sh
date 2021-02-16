@@ -266,7 +266,7 @@ header1Begin "Install AIOPS AI Manager"
             then
                 __output "     ${GREEN}${healthy} AIOPS AI Manager already installed... ${ORANGE}Skipping${NC}"
             else
-                ./11_install_aiops_ai_manager.sh 
+                ./20_install_aiops_ai_manager.sh 
                 echo ""
             fi
         else
@@ -297,7 +297,7 @@ header1Begin "Install AIOPS Event Manager (NOI)"
             then
                 __output "     ${GREEN}${healthy} AIOPS Event Manager (NOI) already installed... ${ORANGE}Skipping${NC}"
             else
-                ./12_install_aiops_event_manager.sh
+                ./21_install_aiops_event_manager.sh
             fi
 
 
@@ -408,7 +408,7 @@ header1Begin "Install Add-Ons"
   
         header2Begin "LDAP - Install"
 
-            INSTALL_LDAP=true
+            INSTALL_LDAP=$INSTALL_SEPARATE_LDAP
             checkComponentNotInstalled LDAP
             if [[ $MUST_INSTALL == "1" ]]; 
             then
@@ -428,67 +428,6 @@ header1End "Install Add-Ons"
 
 
 
-
-
-
-
-# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# Post Install
-# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    
-header1Begin "Post Install"
-
-        header2Begin "Enable admin user"
-            #oc exec -it -n WAIOPS_AI_MGR_NAMESPACE \
-            #$(oc get pod -n WAIOPS_AI_MGR_NAMESPACE -l component=usermgmt | tail -1 | cut -f1 -d\ ) \
-            #-- bash -c "/usr/src/server-src/scripts/manage-user.sh --enable-user admin"
-        header2End
-
-        header2Begin "Adapt ROKS S3 Training"
-            oc project zen 
-            oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/event_group.yaml
-            oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/event_group_eval.yaml
-            oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/event_ingest.yaml
-            oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/log_anomaly.yaml
-            oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/log_anomaly_eval.yaml
-            oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/log_ingest.yaml
-            oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/log_ingest_eval.yaml
-        header2End
-
-
-        header2Begin "Creaete Flink Job Manager Route"
-            oc create route passthrough job-manager --service=demo-aimanager-ibm-flink-job-manager --port=8000
-        header2End
-
-
-  header3Begin "Adapt Nginx Certs"
-
-            
-            PODS_PENDING=""
-
-
-
-            while  [[ $PODS_PENDING == "" ]]; do 
-                PODS_PENDING=$(oc get pods -l component=ibm-nginx | grep -v "No resources" || true)
-                 __output "${clock}   Still checking..."
-                sleep 5
-            done
-
-            oc get secrets -n openshift-ingress | grep tls | grep -v router-metrics-certs-default | awk '{print $1}' | xargs oc get secret -n openshift-ingress -o yaml > tmpcert.yaml
-            cat tmpcert.yaml | grep " tls.crt" | awk '{print $2}' |base64 -d > cert.crt
-            cat tmpcert.yaml | grep " tls.key" | awk '{print $2}' |base64 -d > cert.key
-            ibm_nginx_pod=$(oc get pods -l component=ibm-nginx -o jsonpath='{ .items[0].metadata.name }')
-            oc exec ${ibm_nginx_pod} -- mkdir -p "/user-home/_global_/customer-certs"
-            oc cp cert.crt ${ibm_nginx_pod}:/user-home/_global_/customer-certs/
-            oc cp cert.key ${ibm_nginx_pod}:/user-home/_global_/customer-certs/
-            for i in `oc get pods -l component=ibm-nginx -o jsonpath='{ .items[*].metadata.name }' `; do oc exec ${i} -- /scripts/reload.sh; done
-            rm tmpcert.yaml cert.crt cert.key
-        header3End
-
-
-header1End "Post Install"
 
 
 

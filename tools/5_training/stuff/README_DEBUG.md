@@ -68,9 +68,32 @@ kafkacat -v -X security.protocol=SSL -X ssl.ca.location=./kafkacat-ca.crt -X sas
 
 ```bash
 
+curl -X GET "localhost:9200/my-index-000001?pretty"
 
 
 curl -u $ES_USERNAME:$ES_PASSWORD -XGET https://$ES_ENDPOINT/_cat/indices  --insecure 
+
+
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/_cat/indices/  
+
+curl -u $ES_USERNAME:$ES_PASSWORD -XGET https://$ES_ENDPOINT/_cat/indices  --insecure | grep a7fnt4s6-kpwliwck | awk '{print $3;}'
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XGET https://$ES_ENDPOINT/a7fnt4s6-kpwliwck-1-embedding_pca_model
+
+
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/a7fnt4s6-kpwliwck-1-embedding_pca_model
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/a7fnt4s6-kpwliwck-1-anomaly_group_id
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/a7fnt4s6-kpwliwck-1-training_count_vectors
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/a7fnt4s6-kpwliwck-1-pca_fe
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/a7fnt4s6-kpwliwck-event_models_latest
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/a7fnt4s6-kpwliwck-1-pca_model
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/a7fnt4s6-kpwliwck-pagerduty_mapping_models_latest
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/a7fnt4s6-kpwliwck-20210212-logtrain
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/a7fnt4s6-kpwliwck-incident_models_latest
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/a7fnt4s6-kpwliwck-1-applications
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/a7fnt4s6-kpwliwck-1-embedding_pca_fe
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/a7fnt4s6-kpwliwck-1-templates
+curl -u $ES_USERNAME:$ES_PASSWORD --insecure  -XDELETE https://$ES_ENDPOINT/normalized-incidents-a7fnt4s6-kpwliwck
+
 
 oc exec -it $(oc get pods | grep persistence | awk '{print $1;}') -- bash -c "curl -k https://localhost:8443/v2/similar_incident_lists" 
 oc exec -it $(oc get pods | grep persistence | awk '{print $1;}') -- bash -c "curl -k https://localhost:8443/v2/alertgroups" 

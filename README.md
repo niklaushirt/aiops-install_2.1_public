@@ -230,6 +230,10 @@ In the container part (same level as name)
 You can do this by executing:
 ```bash
 kubectl patch DaemonSet humio-fluentbit-fluentbit -n humio-logging -p '{"spec": {"template": {"spec": {"containers": [{"name": "humio-fluentbit","image": "fluent/fluent-bit:1.4.2","securityContext": {"privileged": true}}]}}}}' --type=merge
+
+
+kubectl delete -n humio-logging pods -l k8s-app=humio-fluentbit
+
 ```
 
 
@@ -377,19 +381,49 @@ resource.name=\"sockshop\" severity=Critical resource.hostname=sockshop type.eve
 
 ### Create K8s Observers
 
-For each DemoApp (bookinfo, kubetoy) create observer:
+Create Observer for kubetoy:
 
 * Administration --> Topology Management --> ObserverJobs Configure --> Add new Job / Kubernetes"
 * Terminated Pods: true
 * Correlate: true
-* Namespace: <The one for the app>
+* Namespace: kubetoy
 * Time interval: Once
 
-> Note you might want to create manual Topology for sock-shop
-> 
-> Launch `./demo/maintenance.sh` and select option `11`
 
-### Create Match Tokens Rules
+### Load Topologies for Sockshop and Bookinfo
+
+./demo/maintenance.sh
+
+Select option 11, then option 12
+
+
+
+### Create Templates
+
+Go to Netcool WebGUI
+Administration-->Topology Template
+
+Create a template for Bookinfo and Sockshop:
+
+Bookinfo:
+* Search for productpage-v1 (deployment)
+* Create Topology 3 Levels
+* Select Dynamic
+* Add tag `app:bookinfo`
+* Save
+
+Sockshop:
+* Search for front-end (deployment)
+* Create Topology 3 Levels
+* Select Dynamic
+* Add tag `app:sockshop`
+* Save
+
+
+
+
+
+### Create Match Tokens Rules (not needed for manual Topologies)
 
 ```bash
 export TOPO_PWD=<from ./80_get_logins.sh>
@@ -430,7 +464,10 @@ curl -X "POST" "https://demo-noi-topology.noi.apps.ocp45.tec.uk.ibm.com/1.0/merg
 
 
 ### Create Bastion Server
+
+```bash
 kubectl apply -n default -f ./tools/6_bastion/create-bastion.yaml
+```
 
 Adapt SSL Certificate in Bastion Host Deployment. Get it from Administration --> Integration with other Systems --> Automation Type --> Script
 
@@ -874,6 +911,8 @@ oc set env deployment/$(oc get deploy -l app.kubernetes.io/component=chatops-sla
 kubectl create serviceaccount -n zen demo-admin
 
 oc create clusterrolebinding test-admin --clusterrole=cluster-admin --serviceaccount=zen:demo-admin
+
+
 ```
 
 Get the login Token from secret demo-admin-token-xyz in Namespace zen

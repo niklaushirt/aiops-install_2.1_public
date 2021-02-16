@@ -131,6 +131,16 @@ menu_option_12 () {
 
 }
 
+menu_option_13 () {
+  echo "Create Kubetoy Topology"
+  read -p "Are you really, really, REALLY sure you want to install custom Kubetoy Topology? [y,N] " DO_COMM
+  if [[ $DO_COMM == "y" ||  $DO_COMM == "Y" ]]; then
+      ./demo/kubetoy/create-topology.sh
+  else
+    echo "${RED}Aborted${NC}"
+  fi
+
+}
 
 
 menu_option_77() {
@@ -208,6 +218,7 @@ until [ "$selection" = "0" ]; do
   echo "  ${rocket} ${RED}Create Topologies${NC} "
   echo "      11  -  Create Sockshop Topology"
   echo "      12  -  Create Bookinfo Topology"
+  echo "      13  -  Create Kubetoy Topology"
   echo "" 
   echo "" 
   echo "    	0  -  Exit"
@@ -232,6 +243,7 @@ until [ "$selection" = "0" ]; do
     6 ) clear ; menu_option_six ; press_enter ;;
     11 ) clear ; menu_option_11 ; press_enter ;;
     12 ) clear ; menu_option_12 ; press_enter ;;
+    13 ) clear ; menu_option_13 ; press_enter ;;
     77 ) clear ; menu_option_77 ; press_enter ;;
     88 ) clear ; menu_option_88 ; press_enter ;;
     99 ) clear ; menu_option_99 ; press_enter ;;
