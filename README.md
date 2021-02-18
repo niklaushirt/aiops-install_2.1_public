@@ -1,10 +1,12 @@
 # Watson AIOps Demo Environment Installation
 
-The official repo is now under the "AIOps - Up And Running" documentation:
+# **The official repo is now under the "AIOps - Up And Running" documentation:**
 
 [https://github.ibm.com/up-and-running/watson-aiops/tree/master/docs/automations/nik_installation](https://github.ibm.com/up-and-running/watson-aiops/tree/master/docs/automations/nik_installation)
 
 
+---------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
 
 
 
