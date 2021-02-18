@@ -28,6 +28,8 @@ echo "${ORANGE}Quit with Ctrl-Z${NC}"
 
 export LOGS_TOPIC=logs-humio-$appgroupid1-$appid1
 
+echo "Injecting into Topic $LOGS_TOPIC"
+
 mv ca.crt ca.crt.old
 oc extract secret/strimzi-cluster-cluster-ca-cert -n zen --keys=ca.crt
 

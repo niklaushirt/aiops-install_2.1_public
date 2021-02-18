@@ -54,7 +54,7 @@
          # Install Separate LDAP service
         export INSTALL_SEPARATE_LDAP=false
 
-        # Install Humio and Fluentbit
+        # Install Humio and Fluentbit (not implemented yet)
         export INSTALL_HUMIO=false
 
 

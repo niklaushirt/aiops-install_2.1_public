@@ -1,53 +1,137 @@
 # Watson AIOps Demo Environment Installation
 
+1. [Prerequisites](#prerequisites)
+1. [Architecture](#architecture)
 1. [AI and Event Manager Base Install](#ai-and-event-manager-base-install)
 1. [Install Istio](#istio)
-1. [Install Demo Apps](#demo-apps)
-1. [Install Humio](#humio)
-1. [Configure Event Manager / ASM Topology](#configure-event-manager--asm-topology)
-1. [Install Event Manager Gateway](#install-event-manager-gateway)
-1. [Create ASM Integration in AI Manager](#create-asm-integration-in-ai-manager)
-1. [Some Housekeeping](#some-housekeeping)
+1. [Install Demo Apps](#demo-apps-in-ai-manager)
+1. [Demo Apps in AI Manager](#demo-apps)
 1. [Train the Models](#train-the-models)
 1. [Humio Connection from AI Manager (Ops Integration)](#humio-connection-from-ai-manager-ops-integration)
 1. [NOI Connection from AI Manager (Ops Integration)](#noi-connection-from-ai-manager-ops-integration)
+1. [Install Humio](#humio)
+1. [Configure Event Manager / ASM Topology](#configure-event-manager--asm-topology)
+1. [Configure Runbooks](#configure-runbooks)
+1. [Install Event Manager Gateway](#install-event-manager-gateway)
+1. [Create ASM Integration in AI Manager](#create-asm-integration-in-ai-manager)
 1. [Slack integration](#slack-integration)
 1. [Some Polishing](#some-polishing)
 1. [Demo Assets](#demo-assets)
-1. [Install Secure Gateway (not on ROKS)](#install-secure-gateway-not-on-roks)
+
+
+
+---------------------------------------------------------------------------------------------------------------
+## Introduction
+------------------------------------------------------------------------------
+
+This repository documents the progress of me learning to build a Watson AIOps demo environment.
+
+This is provided `as-is`:
+
+* I'm sure there are errors
+* I'm sure it's not complete
+* It clearly can be improved
+
+So please if you have feedback contact me on Slack 
+> Niklaus Hirt
+
+
+
+---------------------------------------------------------------------------------------------------------------
+## Prerequisites
+------------------------------------------------------------------------------
+
+### OpenShift requirements
+
+I installed the demo in a ROKS environment.
+
+You'll need:
+
+- 5x worker nodes Flavor `b3c.16x64` (so 16 CPU / 64 GB)
+
+You might get away with less if you don't install some components (Istio, ...)
+
+
+### Tooling
+
+You need the following tools installed in order to follow through this guide:
+
+- gnu-sed (on Mac)
+- oc
+- jq
+- kubectl
+- kafkacat
+
+```bash
+brew install gnu-sed
+brew install kafkacat
+brew install jq
+```
+
+
+Get oc and kubectl from [here](https://github.com/openshift/okd/releases/)
+
+or use :
+
+```bash
+wget https://github.com/openshift/okd/releases/download/4.6.0-0.okd-2021-02-14-205305/openshift-client-mac-4.6.0-0.okd-2021-02-14-205305.tar.gz -O oc.tar.gz
+tar xfzv oc.tar.gz
+mv kubectl /usr/local/bin
+mv oc /usr/local/bin
+```
 
 
 
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## Architecture
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+The environement (Kubernetes, Applications, ...) create logs that are being fed into a Log Management Tool (Humio in this case).
+
+![](./pics/aiops-demo.png)
+
+The Log Management Tool (Humio) generates Alerts when it detects a problem and sends them into the Event Manager (Netcool Operations Insight), which in turn sends them to the AI Manager for Event Grouping.
+
+At the same time AI Manager ingests the raw logs coming from the Log Management Tool (Humio) and looks for anomalies in the stream based on the trained model.
+If it finds an anomaly it forwards it to the Event Grouping as well.
+
+Out of this, AI Manager creates a Story that is being enriched with Topology (Localization and Blast Radius) and with Similar Incidents that might help correct the problem.
+
+The Story is then sent to Slack.
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## AI and Event Manager Base Install
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-### Adapt 01_config-modules.sh
+### Adapt configuration
 
-**Select Storage Class**
+Adapt the 01_config-modules.sh file with the **Storage Class** (ibmc-file-gold-gid on ROKS) and the modules you want to install.
 
-Make sure it's the default class
-
-### 
+### Start installation
 
 ```bash
 ./10_install_aiops.sh -t <PULL_SECRET_TOKEN>
 ```
 
+This will install:
+
+- AI Manager
+- Event Manager (NOI)
+- ASM
 
 
 
-# Post Install
 
-
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
 ## Istio 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
+Istio installation is optional and is used only for the Bookinfo app.
+
+If you don't use Istio, you'll have to create a Route to the Productpage Pod.
+
 
 ```bash
 oc create ns istio-system
@@ -64,9 +148,58 @@ Install:
 - Create CR ServiceMeshMemberRoll in istio-system for bookinfo (!)
 
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------------------
+## Demo Apps in AI Manager
+------------------------------------------------------------------------------
+
+
+### Create Apps
+
+Define an Application Group ( I call it DemoApps)
+In this Group create three Applications:
+
+- Bookinfo
+- Kubetoy
+- Sockshop
+
+
+### Create Log Ops Integration
+
+For Bookinfo and Sockshop:
+
+In AI Manager on the App:
+Create Ops Integration --> Apache Kafka --> Next --> Logs / Humio and use the mapping:
+
+```yaml
+{
+    "rolling_time": 10,
+    "instance_id_field": "kubernetes.container_name",
+    "log_entity_types": "kubernetes.namespace_name,kubernetes.container_hash,kubernetes.host,kubernetes.container_name,kubernetes.pod_name",
+    "message_field": "@rawstring",
+    "timestamp_field": "@timestamp"
+}
+```
+
+
+> **Important**: whenever you have to provide a mapping for Humio throughout this guide, please make sure that the `instance_id_field` is set to `kubernetes.container_name`
+
+
+Jot down somewhere safe the AppGroup ID and the App IDs of what you just created.
+
+To get them is to go on `Insight Models`, click `Configure` (the little pen), enter any version number and click `Generate`.
+
+You get something like this:
+
+```yaml
+$EVENT_INGEST
+ - zvqubqka.  --> AppGroup Id
+    - yqyy711o. --> App Id
+```
+
+---------------------------------------------------------------------------------------------------------------
 ## Demo Apps
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 ### Install Bookinfo
 
@@ -84,25 +217,13 @@ oc apply -n bookinfo -f ./demo_install/bookinfo/virtual-service-reviews-100-v2.y
 
 #### Install Bookinfo genereate load
 
+This generates constant load on the Bookinfo app
+
 ```bash
 oc apply -n default -f ./demo_install/bookinfo/bookinfo-create-load.yaml
 ```
 
-#### Create Log Inject for Demo
 
-In AI Manager on the App:
-Create Ops Integration --> Apache Kafka --> Next --> Logs / Humio and use the mapping:
-
-```yaml
-{
-    "rolling_time": 10,
-    "instance_id_field": "kubernetes.container_name",
-    "log_entity_types": "kubernetes.namespace_name,kubernetes.container_hash,kubernetes.host,kubernetes.container_name,kubernetes.pod_name",
-    "message_field": "@rawstring",
-    "timestamp_field": "@timestamp"
-}
-```
-Adapt the file ./demo/bookinfo/demo.sh with the given Topic
 
 ### Install Kubetoy
 
@@ -123,28 +244,136 @@ oc adm policy add-scc-to-user privileged -n sock-shop -z default
 oc create clusterrolebinding default-sock-shop-admin --clusterrole=cluster-admin --serviceaccount=sock-shop:default
 
 kubectl apply -n sock-shop -f ./demo_install/sockshop/sockshop-complete.yaml
-
-kubectl apply -n default -f ./demo_install/sockshop/sockshop-create-load.yaml
-
 ```
 
+#### Install SockShop genereate load
 
-### Install RoboShop (not yet working)
+This generates constant load on the SockShop app
 
 ```bash
-kubectl create ns robot-shop
-helm install robot-shop --namespace robot-shop ./demo_install/robot-shop/helm
-
-kubectl apply -n robot-shop -f ./demo_install/robot-shop/istio/gateway.yaml
-
-oc create clusterrolebinding robot-admin --clusterrole=cluster-admin --serviceaccount=robot-shop:default
+kubectl apply -n default -f ./demo_install/sockshop/sockshop-create-load.yaml
 ```
 
 
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------------------
+## Train the Models
+------------------------------------------------------------------------------
+
+### Prerequisite - adapt for ROKS S3 Storage
+
+```bash
+oc project zen 
+oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/event_group.yaml
+oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/event_group_eval.yaml
+oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/event_ingest.yaml
+oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/log_anomaly.yaml
+oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/log_anomaly_eval.yaml
+oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/log_ingest.yaml
+oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/log_ingest_eval.yaml
+
+```
+
+
+
+### Training
+
+You have to train the following models.
+
+Bookinfo:
+
+- Log Anomaly
+- Events
+- Similar Incidents
+
+Kubetoy:
+
+- Events
+- Similar Incidents
+
+Sockshop:
+
+- Log Anomaly
+- Events
+- Similar Incidents
+
+
+You can find the steps in the `tools/5_training` folder.
+
+[Training Bookinfo](./tools/5_training/TRAINING_BOOKINFO.md)
+
+[Training Kubetoy](./tools/5_training/TRAINING_KUBETOY.md)
+
+[Training Sockshop](./tools/5_training/TRAINING_SOCKSHOP.md)
+
+
+Use the AppGroup and App IDs from the above step.
+
+Please bear in mind that Event and Log Anomaly training takes some time!
+
+
+
+
+---------------------------------------------------------------------------------------------------------------
+## Humio Connection from AI Manager (Ops Integration)
+------------------------------------------------------------------------------
+
+### Create Ops Integration on Bookinfo App
+
+Do this for Bookinfo and Sockshop
+
+#### URL
+
+Get the Humio URL from your browser
+
+Add at the end `/api/v1/repositories/aiops/query`
+
+
+
+#### Accounts Token
+
+Get it from Humio --> Owl in the top right corner --> Your Account --> API Token
+
+#### Filter
+kubernetes.namespace_name="bookinfo"
+
+or
+
+kubernetes.namespace_name="sock-shop"
+
+#### Mapping
+
+```yaml
+{
+    "rolling_time": 10,
+    "instance_id_field": "kubernetes.container_name",
+    "log_entity_types": "kubernetes.namespace_name,kubernetes.container_hash,kubernetes.host,kubernetes.container_name,kubernetes.pod_name",
+    "message_field": "@rawstring",
+    "timestamp_field": "@timestamp"
+}
+```
+
+---------------------------------------------------------------------------------------------------------------
+## NOI Connection from AI Manager (Ops Integration)
+------------------------------------------------------------------------------
+
+Do this for Bookinfo, Sockshop and Kubetoy
+
+Create Ops Integration
+
+* Select Apache Kafka
+* Next
+* Data Source --> Events
+* Ops integration mapping type --> Netcool
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------
 ## HUMIO
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 ### Install HUMIO
 
@@ -163,21 +392,22 @@ oc adm policy add-scc-to-user privileged -n humio-logging -z humio-instance
 oc adm policy add-scc-to-user privileged -n humio-logging -z default
 
 
-
 kubectl apply -n humio-logging -f ./tools/4_integrations/humio/humio-route.yaml
+```
 
-# username: "developer"
+You can get the login details like this:
+
+```bash
+username: "developer" (fixed)
 
 # password
 kubectl get secret developer-user-password -n humio-logging -o=template --template={{.data.password}} | base64 -D
-kubectl get service humio-instance-humio--core-http -n humio-logging -o go-template --template='http://{{(index .status.loadBalancer.ingress 0 ).ip}}:8080'
-kubectl get service humio-instance-humio-core-es -n humio-logging -o go-template --template='{{(index .status.loadBalancer.ingress 0 ).ip}}'
 
-kubectl get service humio-instance-humio-core-es -n humio-logging
 ```
+
 #### Change developer password
 
-Modify Secret developer-user-password
+If you want to modify the password you have to update the Secret `developer-user-password`
 
 ```yaml
 kind: Secret
@@ -190,18 +420,20 @@ data:
 type: Opaque
 ```
 
+Don't forget to base64 encode the password.
+
 
 ### Configure Humio
 
 * Create Repository `aiops`
-* Get Ingest token
+* Get Ingest token (Settings --> API tokens)
 
 
 
 ### Humio Fluentbit
 
 ```bash
-export INGEST_TOKEN=ZsXyuLJrdKnZFqtLaTldvqsNhRYCmhFikLLQ9mBM1tDQ (put your token)
+export INGEST_TOKEN=ZsXyuLJrdKnZFqtLaTldvqsNhRYCmhFikLLQ9mBM1tDQ (put your token from above)
 
 ```
 
@@ -220,20 +452,10 @@ helm install humio-fluentbit humio/humio-helm-charts \
 
 #### Modify DaemonSet
 
-In the container part (same level as name)
-
-```yaml
-        securityContext:
-          privileged: true
-```
-
-You can do this by executing:
 ```bash
 kubectl patch DaemonSet humio-fluentbit-fluentbit -n humio-logging -p '{"spec": {"template": {"spec": {"containers": [{"name": "humio-fluentbit","image": "fluent/fluent-bit:1.4.2","securityContext": {"privileged": true}}]}}}}' --type=merge
 
-
 kubectl delete -n humio-logging pods -l k8s-app=humio-fluentbit
-
 ```
 
 
@@ -367,9 +589,9 @@ resource.name=\"sockshop\" severity=Critical resource.hostname=sockshop type.eve
 
 
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
 ## Configure Event Manager / ASM Topology
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 ### Create User that can see Topology
 
@@ -379,23 +601,14 @@ resource.name=\"sockshop\" severity=Critical resource.hostname=sockshop type.eve
 * Manage Users  --> Create User "demo" --> add to group admin
 * In Netcool WebGUI --> Top Right click on cog --> Group Roles --> Give all rights
 
-### Create K8s Observers
-
-Create Observer for kubetoy:
-
-* Administration --> Topology Management --> ObserverJobs Configure --> Add new Job / Kubernetes"
-* Terminated Pods: true
-* Correlate: true
-* Namespace: kubetoy
-* Time interval: Once
-
 
 ### Load Topologies for Sockshop and Bookinfo
 
 ./demo/maintenance.sh
 
-Select option 11, then option 12
+Select option 11, 12 and 13.
 
+This will create Topologies for the three Applications
 
 
 ### Create Templates
@@ -409,6 +622,7 @@ Bookinfo:
 * Search for productpage-v1 (deployment)
 * Create Topology 3 Levels
 * Select Dynamic
+* Enable "Correlate event groups on topologies from this template"
 * Add tag `app:bookinfo`
 * Save
 
@@ -416,43 +630,19 @@ Sockshop:
 * Search for front-end (deployment)
 * Create Topology 3 Levels
 * Select Dynamic
+* Enable "Correlate event groups on topologies from this template"
 * Add tag `app:sockshop`
+* Save
+
+Kubetoy:
+* Search for kubetoy (deployment)
+* Create Topology 3 Levels
+* Select Static
+* Enable "Correlate event groups on topologies from this template"
 * Save
 
 
 
-
-
-### Create Match Tokens Rules (not needed for manual Topologies)
-
-```bash
-export TOPO_PWD=<from ./80_get_logins.sh>
-
-curl -X "POST" "https://demo-noi-topology.noi.apps.ocp45.tec.uk.ibm.com/1.0/merge/rules" \
-     -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' \
-     -H 'Content-Type: application/json; charset=utf-8' \
-     -H 'Cookie: 4537c95a03ec20cc9f6b6f42e89f1813=c0be3a94130da5df0c9ac3301f4cc803; 3a1a35fb207ba3c538d4e2b63ac68863=de912e600edcedf26b7b3ce9b7e71f40; 4bbb996250454381873de3d013af38e1=532530c6bdd7ac721f8684a66eff61b6' \
-     -u 'demo-noi-topology-noi-user:$TOPO_PWD' \
-     --insecure \
-     -d $'{
-  "tokens": [
-    "name"
-  ],
-  "entityTypes": [
-    "deployment",
-    "service"
-  ],
-  "providers": [
-    "*"
-  ],
-  "observers": [
-    "*"
-  ],
-  "ruleType": "matchTokensRule",
-  "name": "kubetoy-match-name",
-  "ruleStatus": "enabled"
-}'
-```
 
 ### Create grouping Policy
 
@@ -461,15 +651,32 @@ curl -X "POST" "https://demo-noi-topology.noi.apps.ocp45.tec.uk.ibm.com/1.0/merg
 * On `Alert Group`
 
 
-
+---------------------------------------------------------------------------------------------------------------
+## Configure Runbooks
+------------------------------------------------------------------------------
 
 ### Create Bastion Server
+
+This creates a simple Pod with the needed tools (oc, kubectl) being used as a bastion host for Runbook Automation. 
 
 ```bash
 kubectl apply -n default -f ./tools/6_bastion/create-bastion.yaml
 ```
 
-Adapt SSL Certificate in Bastion Host Deployment. Get it from Administration --> Integration with other Systems --> Automation Type --> Script
+### Create the NOI Integration
+
+#### In NOI
+
+* Go to  Administration --> Integration with other Systems --> Automation Type --> Script
+* Copy the SSH KEY
+
+
+#### Adapt SSL Certificate in Bastion Host Deployment. 
+
+* Select the `bastion-host` Deployment in Namespace `default`
+* Adapt Environment Variable SSH_KEY with the key you have copied above.
+
+
 
 ### Create Automation
 
@@ -524,11 +731,11 @@ kubectl delete pod -n NAMESPACE <your-pod-id>
 
 **Bookinfo Reviews-Ratings**
 
-Automated
+Automated --> Use the Automation created above
 
 **Sockshop Catalogue**
 
-Automated
+Automated --> Use the Automation created above
 
 
 
@@ -546,63 +753,15 @@ based on Alert Group
 
 
 
-### Modify Look
 
-#### Resource types
-
-**deploy**:
-
-```bash
-Border Color Function: return '#ebb134';
-
-Background Color Function: return '#e3eeff';
-```
-
-**pod**
-
-```bash
-Background Color Function: return '#e3eeff';
-```
-
-**service**
-
-```bash
-Background Color Function: return '#e3eeff';
-```
-
-#### Relationship types
-
-**exposes**
-
-```bash
-Line Color Function: return '#80eb34';
-Line Width Function: return '1.5px';
-```
-
-**managers**
-
-```bash
-Line Color Function: return '#ebb134';
-Line Width Function: return '1.5px';
-```
-
-
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
 ## Install Event Manager Gateway
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 ### Create Strimzi route
 
-Add Listener to Strimzi Operator CR in Namespace zen: Modify CR
+Add Listener to Strimzi Operator CR in Namespace zen:
 
-```yaml
-    listeners:
-      external:
-        type: route
-```
-
-You can do this with this command:
 
 ```bash
 kubectl patch Kafka strimzi-cluster -n zen -p '{"spec": {"kafka": {"listeners": {"external": {"type": "route"}}}}}' --type=merge
@@ -619,19 +778,26 @@ Copy secret strimzi-cluster-cluster-ca-cert - from  zen to noi
 kubectl get secret strimzi-cluster-cluster-ca-cert -n zen -oyaml
 ```
 
+* Clean out all the unneeded metadata and status info.
+* Change Namespace to noi
+* Apply
 
 
-### Get info
+### Get needed info
+
+Jot down the following information
 
 ```bash
 oc get secret token -n zen --template={{.data.password}} | base64 --decode
 
 oc get routes -n zen strimzi-cluster-kafka-bootstrap -o=jsonpath='{.status.ingress[0].host}{"\n"}'
 
-oc get kafkatopic -n zen | grep windows
+oc get kafkatopic -n zen | grep alerts-noi
 ```
 
 ### Modify Template 
+
+Copy the templates to be modified 
 
 ```bash
 cp ./tools/3_integrationgateway/nikh-bookinfo-demo-noi-aimgr-gateway-config-template.yaml ./tools/3_integrationgateway/nikh-bookinfo-demo-noi-aimgr-gateway-config-template_XXXX.yaml
@@ -640,8 +806,9 @@ cp ./tools/3_integrationgateway/nikh-sockshop-demo-noi-aimgr-gateway-config-temp
 
 ```
 
-Replace TODO tags starting line 325
+Replace TODO tags starting line 325 in the _XXX files
 
+> Pay close attention to use the appropriate alerts-noi-xx-yy topic corresponding to your Application!
 
 
 ### Apply Manifest
@@ -662,16 +829,11 @@ kubectl apply -n noi -f ./tools/3_integrationgateway/nikh-sockshop-demo-noi-aimg
 
 
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
 ## Create ASM Integration in AI Manager
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
-
-
-
-
-
-### Create the Operations integration for the AppGroup.
+### Create the Operations integration for the AppGroup
 
 
 #### Get certificate
@@ -691,56 +853,10 @@ oc get secret demo-noi-topology-topology-cert -n noi -o yaml | grep tls.crt | aw
 * Layout URL : https://demo-noi-topology-layout.noi.svc:7084
 * Merge Service URL : https://demo-noi-topology-merge.noi.svc:7082
 * Search URL : https://demo-noi-topology-search.noi.svc:7080
-* UI URL : https://netcool.demo-noi.apps.ocp45.tec.uk.ibm.com. (adapt this to your NOI URL)
+* UI URL : https://netcool.demo-noi.apps.ocp45.tec.uk.ibm.com. (adapt this to your NOI URL from your browser)
 * UI API URL : https://demo-noi-topology-ui-api.noi.svc:3080
 
 
-
-### Use external Route (ROKS)
-
-If you want to use external route you have to create new routes with only one subdomain, as the certificates are not working if you don't change this.
-
-
-#### Create Route
-
-This is only needed if you don't use the internal Service routes
-```bash
-oc get route -n noi | grep topology-topology | awk '{print $2}'
-```
-
-Use the part after `demo-noi-topology.noi.` to adapt the `<CHANGE_URL>` tokens ./tools/4_integrations/ASM/routes.yaml
-
-
-```bash
-kubectl apply -n noi -f ./tools/4_integrations/ASM/routes.yaml
-```
-
-Then browse to the new asm-topology Route and add `/swagger`
-
-to check if the Route is working.
-
-#### Get certificate
-
-From the Swagger URL above get the Certificate
-
-Usually something like this:
-
-```yaml
------BEGIN CERTIFICATE-----
-MIIF.....1vyTbt
------END CERTIFICATE-----
------BEGIN CERTIFICATE-----
-MIIF.....Hwg==
------END CERTIFICATE-----
------BEGIN CERTIFICATE-----
-MII.....eGCc=
------END CERTIFICATE-----
-```
-
-**For ROKS** just put the URL from the new route and check "Use topology ..."
-
-
-Get the certificate from secret demo-noi-topology-topology-cert
 
 ### Check ASM connection
 
@@ -761,17 +877,13 @@ Should respond with this:
 
 
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Some Housekeeping
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-### Make Flink Console accessible
 
-If not done in the script 
 
-```bash
-oc create route passthrough job-manager -n zen --service=demo-ai-manager-ibm-flink-job-manager --port=8000
-```
+
+---------------------------------------------------------------------------------------------------------------
+## Slack integration
+------------------------------------------------------------------------------
 
 
 ### Refresh ingress certificates (otherwise Slack will not validate link)
@@ -789,34 +901,38 @@ rm tmpcert.yaml cert.crt cert.key
 ```
 
 
-### Adapt ROKS S3 Training
+### Intefration 
+
+More details are [here](https://pages.github.ibm.com/up-and-running/watson-aiops/End_to_End_Demo_2.1/setup_the_demo/slack/slack/) 
+
+A copy of those instructions are here: ./4_integrations/slack
+
+Thanks Robert Barron!
+
+### Change the Slash Welcome Message
+
+If you want to change the welcome message
 
 ```bash
-oc project zen 
-oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/event_group.yaml
-oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/event_group_eval.yaml
-oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/event_ingest.yaml
-oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/log_anomaly.yaml
-oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/log_anomaly_eval.yaml
-oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/log_ingest.yaml
-oc exec $(oc get pods -l app.kubernetes.io/component=model-train-console -o jsonpath='{ .items[*].metadata.name }') -- sed -i 's/type: mount_cos/type: s3_datastore/g' /home/zeno/train/manifests/s3fs-pvc/log_ingest_eval.yaml
-
+oc set env deployment/$(oc get deploy -l app.kubernetes.io/component=chatops-slack-integrator -o jsonpath='{.items[*].metadata.name }') SLACK_WELCOME_COMMAND_NAME=/aiops-help
 ```
 
 
 
 
 
+---------------------------------------------------------------------------------------------------------------
+## Some Polishing
+------------------------------------------------------------------------------
 
+### Make Flink Console accessible
 
+If not done in the script 
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Train the Models
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+```bash
+oc create route passthrough job-manager -n zen --service=demo-ai-manager-ibm-flink-job-manager --port=8000
+```
 
-1. Train Events --> ./tools/5_training/1_events/README_EVENT.md
-1. Train Logs --> ./tools/5_training/2_logs/README_LOG.md
-1. Train Events --> ./tools/5_training/3_incidents/README_EVENT.md
 
 ### Check if data is flowing
 
@@ -837,82 +953,12 @@ kafkacat -v -X security.protocol=SSL -X ssl.ca.location=./ca.crt -X sasl.mechani
 
 
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Humio Connection from AI Manager (Ops Integration)
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-### Create Ops Integration on Bookinfo App
-
-#### URL
-
-Get the Humio URL
-
-Add `/api/v1/repositories/aiops/query`
-
-
-
-#### Accounts Token
-
-Get it from Humio --> Owl in the top right corner --> Your Account --> API Token
-
-#### Filter
-kubernetes.namespace_name="bookinfo"
-
-#### Mapping
-
-```yaml
-{
-    "rolling_time": 10,
-    "instance_id_field": "kubernetes.container_name",
-    "log_entity_types": "kubernetes.namespace_name,kubernetes.container_hash,kubernetes.host,kubernetes.container_name,kubernetes.pod_name",
-    "message_field": "@rawstring",
-    "timestamp_field": "@timestamp"
-}
-```
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## NOI Connection from AI Manager (Ops Integration)
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-Create integration
-Kafka
-Noi
-
-
-
-
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Slack integration
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-More details are here https://pages.github.ibm.com/garage-tsa/AIOps-Up-And-Running/End_to_End_Demo_2.0/slack/slack_integration/
-
-A copy of those instructions are here: ./4_integrations/slack
-
-
-### Change the Slash Welcome Message
-
-```bash
-oc set env deployment/$(oc get deploy -l app.kubernetes.io/component=chatops-slack-integrator -o jsonpath='{.items[*].metadata.name }') SLACK_WELCOME_COMMAND_NAME=/aiops-help
-```
-
-
-
-
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Some Polishing
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 ### Create USER
 
 ```bash
 kubectl create serviceaccount -n zen demo-admin
 
 oc create clusterrolebinding test-admin --clusterrole=cluster-admin --serviceaccount=zen:demo-admin
-
-
 ```
 
 Get the login Token from secret demo-admin-token-xyz in Namespace zen
@@ -937,7 +983,7 @@ with
 
 initial_admin_password: UDRzc3cwcmQh
 
-Restart Pod: 
+Restart Pod
 
 
 # Demo Assets
@@ -949,51 +995,4 @@ Make sure you have updated the config file ./demo/01_config.sh
 
 
 
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Install Secure Gateway (not on ROKS)
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-### Create the secure gateway in cloud.ibm.com
-
-
-
-### Get info
-
-Get the Gateway Token
-Get the Gateway ID
-
-
-
-### Install in Cluster
-
-```bash
-oc create secret generic ibm-secure-gateway --from-literal='GATEWAY_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb25maWd1cmF0aW9uX2lkIjoiZWo2cnJjbVlvcUJfcHJvZF9ldS1nYiIsInJlZ2lvbiI6ImV1LWdiIiwiaWF0IjoxNjA3MDA2MjcxfQ.MfO2nCiqPg6hmzKTcmprjKhjSdV38KkYwhoFVMcgjDs' --from-literal='GATEWAY_ID=ej6rrcmYoqB_prod_eu-gb' -n default
-
-
-kubectl apply -n default -f ./tools/8_secure-gateway/secure-gateway.yaml
-```
-
-
-
-### Create the URL
-
-
-Get the Slack callback URL from AI Manager.
-Should look something like this:
-https://zen-cpd-zen.apps.ocp45.tec.uk.ibm.com/aiops/demo-aimanager/instances/1612252227557038/api/slack/events
-
-
-Get the Destination URL (Cloud Host : Port)
-Should look something like this:
-cap-sg-prd-3.securegateway.appdomain.cloud:20151
-
-
-Consruct the final URL
-https://cap-sg-prd-3.securegateway.appdomain.cloud:20151/aiops/demo-aimanager/instances/1612252227557038/api/slack/events
-
-Use this in the Slack App:
-- Event Subscription
-- Slash Commands
-- Interactivity & Shortcuts
 
