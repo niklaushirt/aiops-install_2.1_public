@@ -11,7 +11,7 @@ do
     export my_timestamp=$(date +%s)000
     echo "Injecting Event at: $my_timestamp"
 
-    curl --insecure -X "POST" "$NETCOOL_WEBHOOK" \
+    curl --insecure -X "POST" "$NETCOOL_WEBHOOK_HUMIO" \
       -H 'Content-Type: application/json; charset=utf-8' \
       -d $"${line}"
     echo "----"

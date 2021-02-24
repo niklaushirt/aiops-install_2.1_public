@@ -42,7 +42,7 @@ export appid=q22ruydf
 export version=1
 
 # Incident
-bash index_incidents.sh s3://similar-incident-service/test-incidents_bookinfo.json $appgroupid $appid
+oc cp ./tools/5_training/3_incidents/trainingdata/test-incidents_bookinfo.json $(oc get po |grep model-train-console|awk '{print $1}'):/home/zeno/data/trainingdata/incident/test-incidents_bookinfo.json
 
 # Event
 oc cp ./tools/5_training/1_events/trainingdata/raw/alerts-noi-bookinfo.json $(oc get po |grep model-train-console|awk '{print $1}'):/home/zeno/data/trainingdata/event/$appgroupid/$appid/$version/raw/noi-alerts.json

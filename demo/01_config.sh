@@ -9,24 +9,24 @@
 
 
 
-export NETCOOL_WEBHOOK=https://netcool.demo-noi.xxxxx/norml/webhook/humio/yyy/zzz
+export NETCOOL_WEBHOOK_HUMIO=https://netcool.demo-noi.not_configured/norml/webhook/humio/yyy/zzz
 
 
 
 
 # Bookinfo
-export appgroupid1=aaa
-export appid1=bbb
+export appgroupid1=not_configured
+export appid1=not_configured
 # Kubetoy
-export appgroupid2=ccc
-export appid2=ddd
+export appgroupid2=not_configured
+export appid2=not_configured
 # Sockshop
-export appgroupid3=eee
-export appid3=fff
+export appgroupid3=not_configured
+export appid3=not_configured
 
 # Only for Topology Load
 export NOI_REST_USR=demo-noi-topology-noi-user
-export NOI_REST_PWD=zzzzz
+export NOI_REST_PWD=not_configured
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

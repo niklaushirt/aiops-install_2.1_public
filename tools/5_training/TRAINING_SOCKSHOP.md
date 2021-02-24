@@ -6,21 +6,13 @@
 ## Prepare Datastructure (in the Training Console)
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
+Log in to Training console 
 
+```bash
+oc project zen
+oc exec -it $(oc get po |grep model-train-console|awk '{print$1}') bash
+```
 
-#oc project zen
-export execute_console="oc exec -it $(oc get po |grep model-train-console|awk '{print$1}') -- "
-
-export appgroupid=a7fnt4s6
-export appid=kpwliwck
-export version=1
-
-$(eval $execute_console mkdir -p /home/zeno/data/trainingdata/log/$appgroupid/$appid/$version/)
-
-
-
-
-exit 1
 
 ### Create Directory (in training console)
 

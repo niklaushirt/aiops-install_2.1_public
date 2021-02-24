@@ -1,6 +1,73 @@
 echo "Simulating Bookinfo Ratings outage"
 
+echo "${ORANGE}Quit with Ctrl-Z${NC}"
 
+echo "Falco Push"
+input="./demo/bookinfo/falco_push.json"
+while IFS= read -r line
+do
+  export my_timestamp=$(date +%s)000
+  echo "Injecting Event at: $my_timestamp"
+
+  curl --insecure -X "POST" "$NETCOOL_WEBHOOK_FALCO" \
+     -H 'Content-Type: application/json; charset=utf-8' \
+     -H 'Cookie: d291eb4934d76f7f45764b830cdb2d63=90c3dffd13019b5bae8fd5a840216896' \
+     -d $"${line}"
+  echo "----"
+done < "$input"
+
+echo "Done"
+
+echo ""
+echo ""
+echo ""
+echo ""
+echo ""
+echo "Grafana Push"
+input="./demo/bookinfo/grafana_push.json"
+while IFS= read -r line
+do
+  export my_timestamp=$(date +%s)000
+  echo "Injecting Event at: $my_timestamp"
+
+  curl --insecure -X "POST" "$NETCOOL_WEBHOOK_GRAFANA" \
+     -H 'Content-Type: application/json; charset=utf-8' \
+     -H 'Cookie: d291eb4934d76f7f45764b830cdb2d63=90c3dffd13019b5bae8fd5a840216896' \
+     -d $"${line}"
+  echo "----"
+done < "$input"
+
+echo "Done"
+
+echo ""
+echo ""
+echo ""
+echo ""
+echo ""
+echo "Git Push"
+input="./demo/bookinfo/git_push.json"
+while IFS= read -r line
+do
+  export my_timestamp=$(date +%s)000
+  echo "Injecting Event at: $my_timestamp"
+
+  curl --insecure -X "POST" "$NETCOOL_WEBHOOK_GIT" \
+     -H 'Content-Type: application/json; charset=utf-8' \
+     -H 'Cookie: d291eb4934d76f7f45764b830cdb2d63=90c3dffd13019b5bae8fd5a840216896' \
+     -d $"${line}"
+  echo "----"
+done < "$input"
+
+echo "Done"
+
+echo ""
+echo ""
+echo ""
+echo ""
+echo ""
+echo "Injecting Humio Events"
+
+export LOGS_TOPIC=logs-humio-$appgroupid1-$appid1
 
 
 input="./demo/bookinfo/error_event.json"
@@ -9,7 +76,7 @@ do
   export my_timestamp=$(date +%s)000
   echo "Injecting Event at: $my_timestamp"
 
-  curl --insecure -X "POST" "$NETCOOL_WEBHOOK" \
+  curl --insecure -X "POST" "$NETCOOL_WEBHOOK_HUMIO" \
      -H 'Content-Type: application/json; charset=utf-8' \
      -H 'Cookie: d291eb4934d76f7f45764b830cdb2d63=90c3dffd13019b5bae8fd5a840216896' \
      -d $"${line}"
