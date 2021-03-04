@@ -1,0 +1,1043 @@
+#oc adm policy add-scc-to-user privileged -n sock-shop -z default
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: sock
+  namespace: sockinfo
+  labels:
+    name: front-end
+    app: sock-shop
+spec:
+  to:
+    kind: Service
+    name: front-end
+    weight: 100
+  port:
+    targetPort: 8079
+  wildcardPolicy: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: carts-db
+  labels:
+    name: carts-db
+    app: sock-shop
+  namespace: sockinfo
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 27017
+    targetPort: 27017
+  selector:
+    name: carts-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: carts
+  labels:
+    name: carts
+    app: sock-shop
+  namespace: sockinfo
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 80
+    targetPort: 80
+  selector:
+    name: carts
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalogue-db
+  labels:
+    name: catalogue-db
+    app: sock-shop
+  namespace: sockinfo
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 3306
+    targetPort: 3306
+  selector:
+    name: catalogue-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalogue
+  labels:
+    name: catalogue
+    app: sock-shop
+  namespace: sockinfo
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 80
+    targetPort: 80
+  selector:
+    name: catalogue
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: front-end
+  labels:
+    name: front-end
+    app: sock-shop
+  namespace: sockinfo
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 8079
+    nodePort: 30001
+  selector:
+    name: front-end
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-db
+  labels:
+    name: orders-db
+    app: sock-shop
+  namespace: sockinfo
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 27017
+    targetPort: 27017
+  selector:
+    name: orders-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders
+  labels:
+    name: orders
+    app: sock-shop
+  namespace: sockinfo
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 80
+    targetPort: 80
+  selector:
+    name: orders
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment
+  labels:
+    name: payment
+    app: sock-shop
+  namespace: sockinfo
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 80
+    targetPort: 80
+  selector:
+    name: payment
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: queue-master
+  labels:
+    name: queue-master
+    app: sock-shop
+  annotations:
+    prometheus.io/path: "/prometheus"
+  namespace: sockinfo
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 80
+    targetPort: 80
+  selector:
+    name: queue-master
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  labels:
+    name: rabbitmq
+    app: sock-shop
+  namespace: sockinfo
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 5672
+    targetPort: 5672
+  selector:
+    name: rabbitmq
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shipping
+  labels:
+    name: shipping
+    app: sock-shop
+  namespace: sockinfo
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 80
+    targetPort: 80
+  selector:
+    name: shipping
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-db
+  labels:
+    name: user-db
+    app: sock-shop
+  namespace: sockinfo
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 27017
+    targetPort: 27017
+  selector:
+    name: user-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user
+  labels:
+    name: user
+    app: sock-shop
+  namespace: sockinfo
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 80
+    targetPort: 80
+  selector:
+    name: user
+
+
+
+
+
+---
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      name: carts-db
+      app: sock-shop
+    name: carts-db
+    namespace: sockinfo
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        name: carts-db
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          name: carts-db
+          version: v1
+          app: sock-shop
+      spec:
+        containers:
+        - image: mongo
+          imagePullPolicy: Always
+          name: carts-db
+          ports:
+          - containerPort: 27017
+            name: mongo
+            protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities:
+              add:
+              - CHOWN
+              - SETGID
+              - SETUID
+              drop:
+              - all
+            readOnlyRootFilesystem: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      name: carts
+      app: sock-shop
+    name: carts
+    namespace: sockinfo
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        name: carts
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          name: carts
+          version: v1
+          app: sock-shop
+      spec:
+        containers:
+        - env:
+          - name: ZIPKIN
+            value: zipkin.jaeger.svc.cluster.local
+          - name: JAVA_OPTS
+            value: -Xms64m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:+UseG1GC
+              -Djava.security.egd=file:/dev/urandom
+          image: weaveworksdemos/carts:0.4.8
+          imagePullPolicy: IfNotPresent
+          name: carts
+          ports:
+          - containerPort: 80
+            protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities:
+              add:
+              - NET_BIND_SERVICE
+              drop:
+              - all
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 10001
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /tmp
+            name: tmp-volume
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir:
+            medium: Memory
+          name: tmp-volume
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      name: catalogue-db
+      app: sock-shop
+    name: catalogue-db
+    namespace: sockinfo
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        name: catalogue-db
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          name: catalogue-db
+          version: v1
+          app: sock-shop
+      spec:
+        containers:
+        - env:
+          - name: MYSQL_ROOT_PASSWORD
+            value: fake_password
+          - name: MYSQL_DATABASE
+            value: socksdb
+          image: weaveworksdemos/catalogue-db:0.3.0
+          imagePullPolicy: IfNotPresent
+          name: catalogue-db
+          ports:
+          - containerPort: 3306
+            name: mysql
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      name: catalogue
+      app: sock-shop
+    name: catalogue
+    namespace: sockinfo
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        name: catalogue
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          name: catalogue
+          version: v1
+          app: sock-shop
+      spec:
+        containers:
+        - image: weaveworksdemos/catalogue:0.3.5
+          imagePullPolicy: IfNotPresent
+          name: catalogue
+          ports:
+          - containerPort: 80
+            protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities:
+              add:
+              - NET_BIND_SERVICE
+              drop:
+              - all
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 10001
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      name: front-end
+      app: sock-shop
+    name: front-end
+    namespace: sockinfo
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        name: front-end
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          name: front-end
+          version: v1
+          app: sock-shop
+      spec:
+        containers:
+        - image: weaveworksdemos/front-end:0.3.12
+          imagePullPolicy: IfNotPresent
+          name: front-end
+          ports:
+          - containerPort: 8079
+            protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          securityContext:
+            capabilities:
+              drop:
+              - all
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 10001
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      name: orders-db
+      app: sock-shop
+    name: orders-db
+    namespace: sockinfo
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        name: orders-db
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          name: orders-db
+          version: v1
+          app: sock-shop
+      spec:
+        containers:
+        - image: mongo
+          imagePullPolicy: Always
+          name: orders-db
+          ports:
+          - containerPort: 27017
+            name: mongo
+            protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities:
+              add:
+              - CHOWN
+              - SETGID
+              - SETUID
+              drop:
+              - all
+            readOnlyRootFilesystem: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /tmp
+            name: tmp-volume
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir:
+            medium: Memory
+          name: tmp-volume
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      name: orders
+      app: sock-shop
+    name: orders
+    namespace: sockinfo
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        name: orders
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          name: orders
+          version: v1
+          app: sock-shop
+      spec:
+        containers:
+        - env:
+          - name: ZIPKIN
+            value: zipkin.jaeger.svc.cluster.local
+          - name: JAVA_OPTS
+            value: -Xms64m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:+UseG1GC
+              -Djava.security.egd=file:/dev/urandom
+          image: weaveworksdemos/orders:0.4.7
+          imagePullPolicy: IfNotPresent
+          name: orders
+          ports:
+          - containerPort: 80
+            protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities:
+              add:
+              - NET_BIND_SERVICE
+              drop:
+              - all
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 10001
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /tmp
+            name: tmp-volume
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir:
+            medium: Memory
+          name: tmp-volume
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      name: payment
+      app: sock-shop
+    name: payment
+    namespace: sockinfo
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        name: payment
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          name: payment
+          version: v1
+          app: sock-shop
+      spec:
+        containers:
+        - image: weaveworksdemos/payment:0.4.3
+          imagePullPolicy: IfNotPresent
+          name: payment
+          ports:
+          - containerPort: 80
+            protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities:
+              add:
+              - NET_BIND_SERVICE
+              drop:
+              - all
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 10001
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      name: queue-master
+      app: sock-shop
+    name: queue-master
+    namespace: sockinfo
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        name: queue-master
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          name: queue-master
+          version: v1
+          app: sock-shop
+      spec:
+        containers:
+        - image: weaveworksdemos/queue-master:0.3.1
+          imagePullPolicy: IfNotPresent
+          name: queue-master
+          ports:
+          - containerPort: 80
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      name: rabbitmq
+      app: sock-shop
+    name: rabbitmq
+    namespace: sockinfo
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        name: rabbitmq
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          name: rabbitmq
+          version: v1
+          app: sock-shop
+      spec:
+        containers:
+        - image: rabbitmq:3.6.8
+          imagePullPolicy: IfNotPresent
+          name: rabbitmq
+          ports:
+          - containerPort: 5672
+            protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities:
+              add:
+              - CHOWN
+              - SETGID
+              - SETUID
+              - DAC_OVERRIDE
+              drop:
+              - all
+            readOnlyRootFilesystem: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      name: shipping
+      app: sock-shop
+    name: shipping
+    namespace: sockinfo
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        name: shipping
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          name: shipping
+          version: v1
+          app: sock-shop
+      spec:
+        containers:
+        - env:
+          - name: ZIPKIN
+            value: zipkin.jaeger.svc.cluster.local
+          - name: JAVA_OPTS
+            value: -Xms64m -Xmx128m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:+UseG1GC
+              -Djava.security.egd=file:/dev/urandom
+          image: weaveworksdemos/shipping:0.4.8
+          imagePullPolicy: IfNotPresent
+          name: shipping
+          ports:
+          - containerPort: 80
+            protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities:
+              add:
+              - NET_BIND_SERVICE
+              drop:
+              - all
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 10001
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /tmp
+            name: tmp-volume
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir:
+            medium: Memory
+          name: tmp-volume
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      name: user-db
+      app: sock-shop
+    name: user-db
+    namespace: sockinfo
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        name: user-db
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          name: user-db
+          version: v1
+          app: sock-shop
+      spec:
+        containers:
+        - image: weaveworksdemos/user-db:0.4.0
+          imagePullPolicy: IfNotPresent
+          name: user-db
+          ports:
+          - containerPort: 27017
+            name: mongo
+            protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities:
+              add:
+              - CHOWN
+              - SETGID
+              - SETUID
+              drop:
+              - all
+            readOnlyRootFilesystem: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /tmp
+            name: tmp-volume
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir:
+            medium: Memory
+          name: tmp-volume
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      name: user
+      app: sock-shop
+    name: user
+    namespace: sockinfo
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        name: user
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "true"
+        creationTimestamp: null
+        labels:
+          name: user
+          version: v1
+          app: sock-shop
+      spec:
+        containers:
+        - env:
+          - name: MONGO_HOST
+            value: user-db:27017
+          image: weaveworksdemos/user:0.4.7
+          imagePullPolicy: IfNotPresent
+          name: user
+          ports:
+          - containerPort: 80
+            protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities:
+              add:
+              - NET_BIND_SERVICE
+              drop:
+              - all
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 10001
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          beta.kubernetes.io/os: linux
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status: {}
+kind: List
+metadata: {}

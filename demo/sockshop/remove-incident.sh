@@ -1,1 +1,0 @@
-oc scale --replicas=1  deployment catalogue -n sock-shop

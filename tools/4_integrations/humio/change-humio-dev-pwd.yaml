@@ -1,8 +1,0 @@
-kind: Secret
-apiVersion: v1
-metadata:
-  name: developer-user-password
-  namespace: humio-logging
-data:
-  password: UDRzc3cwcmQh
-type: Opaque
