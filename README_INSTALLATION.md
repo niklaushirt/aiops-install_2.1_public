@@ -1,8 +1,6 @@
 # Watson AIOps Demo Environment Installation
 
 
-This is a collection of scripts from Niklaus Hirt to install Watson AIOps. The scripts can all be found in the https://github.ibm.com/up-and-running/watson-aiops/tree/master/docs/automations/nik_installation git repo under automations
-
 
 ---------------------------------------------------------------------------------------------------------------
 ## NEW: ℹ️ Offline Click Through Demo
