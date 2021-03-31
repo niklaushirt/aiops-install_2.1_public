@@ -77,7 +77,7 @@ spec:
       serviceAccountName: bookinfo-details
       containers:
       - name: details
-        image: niklaushirt/bookinfo-details-v1:log
+        image: niklaushirt/bookinfo-details-v1:instana
         imagePullPolicy: Always
         ports:
         - containerPort: 9080
@@ -133,7 +133,7 @@ spec:
       serviceAccountName: bookinfo-ratings
       containers:
       - name: ratings
-        image: niklaushirt/bookinfo-ratings-v1:log
+        image: niklaushirt/bookinfo-ratings-v1:instana
         imagePullPolicy: Always
         ports:
         - containerPort: 9080
@@ -250,16 +250,20 @@ spec:
       serviceAccountName: bookinfo-productpage
       containers:
       - name: productpage
-        image: niklaushirt/bookinfo-productpage-v1:log
+        image: niklaushirt/bookinfo-productpage-v1:instana
         imagePullPolicy: Always
         ports:
         - containerPort: 9080
+        env:
+          - name: INSTANA_URL
+            value: https://eum-orange-saas.instana.io
+          - name: INSTANA_KEY
+            value: v-KVxaJeT0mqCrRbvhSx6w
 ---
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
-  name: bookinfo
-  namespace: bookinfo
+  name: bookinfo-route
 spec:
   to:
     kind: Service

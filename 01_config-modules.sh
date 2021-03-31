@@ -55,7 +55,7 @@
         export INSTALL_SEPARATE_LDAP=false
 
         # Install Humio and Fluentbit (not implemented yet)
-        export INSTALL_HUMIO=false
+        export INSTALL_HUMIO=true
 
 
 

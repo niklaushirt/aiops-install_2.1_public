@@ -17,12 +17,23 @@ Make sure that you have done the following:
 
 1. Check that you can access the Slack workspace `TEC Europe` and channel `#watson-aiops-roks-demo`
 
-
 	![demo architecture](pics/slack0.png)
+	
+
 
 0. Login to the Kubernetes Cluster with the `oc login` command that you have *received by mail*
 0. Copy the `01_config.sh` file that you have *received by mail* into the `./demo` folder, **overwriting** the existing dummy one.
-1. Launch `./demo/check.sh`. This will tell you if you are good to go.
+
+1. Go to the ./demo directory 
+
+	```bash
+	cd ./demo
+	```
+
+	> ❗ All scripts have to be executed directly from within the ./demo directory!! 
+
+
+1. Launch `./check-demo.sh`. This will tell you if you are good to go.
 
 
 	![demo architecture](pics/check.png)
@@ -41,6 +52,14 @@ Make sure that you have done the following:
 
 
 	![demo architecture](pics/slack1.png)
+
+1. Check the Bookinfo App. If you get "Sorry, product reviews are currently unavailable for this book." then you have to restart all Bookinfo pods (it seems that sometimes the Bookinfo app sort of "overloads")
+
+	```bash
+	oc delete pods -n bookinfo --all
+	```
+
+----
 
 > ### Now you should be good to go!
 

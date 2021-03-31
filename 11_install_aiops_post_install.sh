@@ -19,9 +19,7 @@ export TEMP_PATH=~/aiops-install
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
 
-set -o errexit
-set -o pipefail
-#set -o xtrace
+
 source ./99_config-global.sh
 
 export SCRIPT_PATH=$(pwd)
@@ -154,15 +152,15 @@ header1Begin "Install Demo Apps"
         kubectl apply -n kubetoy -f ./demo_install/kubetoy/kubetoy_all_in_one.yaml
     header2End
 
-    header2Begin "Install Sockshop"
-        kubectl create ns sockinfo
+    header2Begin "Install RobotShop"
+        oc create ns robot-shop
 
-        oc adm policy add-scc-to-user privileged -n sockinfo -z default
-        oc create clusterrolebinding default-sockinfo-admin --clusterrole=cluster-admin --serviceaccount=sockinfo:default
+        oc adm policy add-scc-to-user privileged -n robot-shop -z robot-shop
+        oc create clusterrolebinding default-robotinfo1-admin --clusterrole=cluster-admin --serviceaccount=robot-shop:robot-shop
 
-        kubectl apply -n sockinfo -f ./demo_install/sockshop/sockshop-complete.yaml
 
-        kubectl apply -n default -f ./demo_install/sockshop/sockshop-create-load.yaml       
+        kubectl apply -f ./demo_install/robotshop/robot-all-in-one.yaml -n robot-shop
+        kubectl apply -n robot-shop -f ./demo_install/robotshop/load-deployment.yaml
     header2End
 
 header1End "Install Demo Apps"
@@ -177,7 +175,7 @@ header1End "Install Demo Apps"
 header1Begin "Install Humio"
     if [[ $INSTALL_HUMIO == "true" ]]; 
     then
-        header2Begin "Humio "
+        header2Begin "Install Humio"
             helm repo add humio https://humio.github.io/humio-helm-charts
             helm repo update
 
@@ -195,7 +193,7 @@ header1Begin "Install Humio"
         header2End
 
 
-        header2Begin "Enable admin user"
+        header2Begin "Install FluentBit"
             oc adm policy add-scc-to-user privileged -n humio-logging -z humio-fluentbit-fluentbit-read
             export INGEST_TOKEN=xxx
             helm install humio-fluentbit humio/humio-helm-charts \
@@ -203,6 +201,10 @@ header1Begin "Install Humio"
             --set humio-fluentbit.token=$INGEST_TOKEN \
             --values ./tools/4_integrations/humio/humio-agent.yaml
             kubectl patch DaemonSet humio-fluentbit-fluentbit -n humio-logging -p '{"spec": {"template": {"spec": {"containers": [{"name": "humio-fluentbit","image": "fluent/fluent-bit:1.4.2","securityContext": {"privileged": true}}]}}}}' --type=merge
+            kubectl apply -n humio-logging -f ./tools/4_integrations/humio/FluentbitDaemonSet_DEBUG.yaml
+
+
+            kubectl delete -n humio-logging pods -l k8s-app=humio-fluentbit
         header2End
 
        
@@ -236,35 +238,6 @@ header1End "Create Strimzi Route"
 
 
 
-header1Begin "Housekeeping"
-
-    header2Begin "Enable admin user"
-           
-    header2End
-
-header1End "Housekeeping"header1Begin "Housekeeping"
-
-    header2Begin "Enable admin user"
-           
-    header2End
-
-header1End "Housekeeping"header1Begin "Housekeeping"
-
-    header2Begin "Enable admin user"
-           
-    header2End
-
-header1End "Housekeeping"header1Begin "Housekeeping"
-
-    header2Begin "Enable admin user"
-           
-    header2End
-
-header1End "Housekeeping"
-
-
-
-
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Housekeeping
@@ -272,11 +245,6 @@ header1End "Housekeeping"
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------    
 header1Begin "Housekeeping"
 
-        header2Begin "Enable admin user"
-            #oc exec -it -n WAIOPS_AI_MGR_NAMESPACE \
-            #$(oc get pod -n WAIOPS_AI_MGR_NAMESPACE -l component=usermgmt | tail -1 | cut -f1 -d\ ) \
-            #-- bash -c "/usr/src/server-src/scripts/manage-user.sh --enable-user admin"
-        header2End
 
         header2Begin "Adapt ROKS S3 Training"
             oc project zen 
@@ -318,8 +286,11 @@ header1Begin "Housekeeping"
 
         header2Begin "Creaete OCP User"
             kubectl create serviceaccount -n zen demo-admin
-
             oc create clusterrolebinding test-admin --clusterrole=cluster-admin --serviceaccount=zen:demo-admin
+
+            kubectl create serviceaccount -n default demo-admin
+            oc create clusterrolebinding default-admin --clusterrole=cluster-admin --serviceaccount=default:demo-admin
+
         header2End
 
 

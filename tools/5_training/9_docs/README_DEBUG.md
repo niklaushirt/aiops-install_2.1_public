@@ -1,7 +1,7 @@
 # RESET MODELS
 
 ```bash
-# Name of the Application (bookinfo, sockshop, kubetoy)
+# Name of the Application (bookinfo, robotshop, kubetoy)
 export application_name=bookinfo
 export appgroupid=zjecaqq2
 export appid=nir5ix68
@@ -12,7 +12,32 @@ export version=1
 
 
 
+```bash
+aws s3 ls s3://log-anomaly --recursive
+aws s3 ls s3://log-ingest --recursive
+aws s3 ls s3://log-model --recursive
 
+aws s3 ls s3://event-group --recursive
+aws s3 ls s3://event-grouping-service --recursive
+aws s3 ls s3://event-ingest --recursive
+
+aws s3 ls s3://similar-incident-service --recursive
+```
+
+```bash
+aws s3 rm s3://log-anomaly --recursive
+aws s3 rm s3://log-ingest --recursive
+aws s3 rm s3://log-model --recursive
+
+aws s3 rm s3://event-group --recursive
+aws s3 rm s3://event-grouping-service --recursive
+aws s3 rm s3://event-ingest --recursive
+
+aws s3 rm s3://similar-incident-service --recursive
+```
+
+
+```bash
 aws s3 sync s3://event-group/ /home/zeno/results/event-group
 
 aws s3 sync s3://event-grouping-service/ /home/zeno/results/event-grouping-service
@@ -27,11 +52,8 @@ aws s3 sync s3://log-anomaly /home/zeno/results/log-anomaly
 aws s3 sync s3://log-model /home/zeno/results/log-model
 
 
-
-
 aws s3 sync s3://similar-incident-service /home/zeno/results/similar-incident-service
-
-
+```
 
 # DEBUG 
 

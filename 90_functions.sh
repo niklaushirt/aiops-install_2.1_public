@@ -1263,14 +1263,14 @@ check_and_install_yq() {
     if [ -x "$(command -v yq)" ]; then
         __output "      ✅ OK"
     else
-        __output "      WARNING: yq is not installed. Installing it now"
+
         if [[ "${OSTYPE}" == "darwin"* ]]; then
+            __output "      WARNING: yq is not installed. Installing it now"
             brew install yq
         else
-            sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
-            sudo add-apt-repository ppa:rmescandon/yq
-            sudo apt update
-            sudo apt install yq -y
+            __output "      WARNING: yq is not installed. Please install it and restart the script."
+            __output "    ❌ Aborting"
+            exit 1
         fi
     fi
     __output ""

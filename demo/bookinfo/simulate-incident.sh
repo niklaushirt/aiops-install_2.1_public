@@ -8,7 +8,7 @@ then
       echo "Skipping Git events injection"
 else
       echo "Git Push"
-      input="./bookinfo/git_push.json"
+      input="./bookinfo/events_git.json"
       while IFS= read -r line
       do
         export my_timestamp=$(date +%s)000
@@ -39,7 +39,7 @@ then
 else
 
       echo "Metrics Push"
-      input="./bookinfo/metrics_push.json"
+      input="./bookinfo/events_metrics.json"
       while IFS= read -r line
       do
         export my_timestamp=$(date +%s)000
@@ -70,7 +70,7 @@ then
       echo "Skipping Falco events injection"
 else
       echo "Falco Push"
-      input="./bookinfo/falco_push.json"
+      input="./bookinfo/events_falco.json"
       while IFS= read -r line
       do
         export my_timestamp=$(date +%s)000
@@ -100,7 +100,7 @@ then
       echo "Skipping Instana events injection"
 else
       echo "Instana Push"
-      input="./bookinfo/instana_push.json"
+      input="./bookinfo/events_instana.json"
       while IFS= read -r line
       do
         export my_timestamp=$(date +%s)000
@@ -130,7 +130,7 @@ then
       echo "Skipping Humio events injection"
 else
       echo "Injecting Humio Events"
-      input="./bookinfo/error_event.json"
+      input="./bookinfo/events_humio.json"
       while IFS= read -r line
       do
         export my_timestamp=$(date +%s)000
@@ -153,14 +153,14 @@ fi
 
 
 
-if [[ $appgroupid1 == "not_configured" ]];
+if [[ demoapps_bookinfo == "not_configured" ]];
 then
     echo "Skipping Log Anomaly injection"
 else
     echo "Injecting error Logs"
     echo "${ORANGE}Quit with Ctrl-Z${NC}"
 
-    export LOGS_TOPIC=logs-humio-$appgroupid1-$appid1
+    export LOGS_TOPIC=logs-humio-demoapps_bookinfo-$appid_bookinfo
 
     echo "Injecting into Topic $LOGS_TOPIC"
 
@@ -171,7 +171,7 @@ else
     export BROKER=$(oc get routes strimzi-cluster-kafka-bootstrap -n zen -o=jsonpath='{.status.ingress[0].host}{"\n"}'):443
       
     #input="./bookinfo/bookinfo-error-inject.json"
-    input="./bookinfo/error_log.json"
+    input="./bookinfo/log_errors.json"
     while IFS= read -r line
     do
       export my_timestamp=$(date +%s)000

@@ -7,10 +7,10 @@
 
 
 
-# Name of the Application (bookinfo, sockshop, kubetoy)
+# Name of the Application (bookinfo, kubetoy, robotshop)
 export application_name=kubetoy
-export appgroupid=p8agtlvy
-export appid=wvaw2akr
+export appgroupid=kubetoygroup
+export appid=kubetoy
 export version=1
 
 

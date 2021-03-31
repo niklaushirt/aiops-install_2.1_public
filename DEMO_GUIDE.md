@@ -33,6 +33,20 @@ cd demo
 ./gitpush_bookinfo.sh
 ```
 
+>❗**IMPORTANT NOTE**:
+>
+>- You won’t get any new Alerts, even if you launch the demo script  (they are only pushed upon creation. This is the normal modus operandi of AI Manager that only takes INSERTS and **NOT** UPDATES and DELETES)
+>
+>- The detected Log Anomalies will probably appear on one of the latest Stories (we don’t have any control over this, this is controlled by AI Manager)
+>
+>
+>If you’d want to create a real example with grouped, new Alerts/Log Anomalies we’d have to reset the demo environment. This is unfortunately not possible in the shared environment as I have to keep the demo environment stable.
+>
+>Usually for my demos I simulate the error just to show the error in the Bookinfo app and then continue with saying “*let’s suppose that we got the following slack message*” and continue to the pinned Story.
+>
+>Unfortunately there is no better way for the time being.
+
+
 
 **Script**:
 > I will now do a simulated push of new code to the Bookinfo Git Repository.
@@ -180,17 +194,17 @@ Go back to back to the [Bookinfo Application](http://istio-ingressgateway-istio-
 	> * Topology Correlation works by grouping events that happen on adjacent nodes on the topology graph
 	> * Let's take a closer look at the Bookinfo App Topology 
 	
-2. Explain Topology more in-depth if you have time. You could for example type `front-end' in the search box and show how to create the topology for the Sockshop Application
+2. Explain Topology more in-depth if you have time. You could for example type `front-end' in the search box and show how to create the topology for the Bookinfo Application
 
-	2. Create Sockshop Topology
+	2. Create Bookinfo Topology
 	
 		> * You can create your custom topology views.
-		> * Let's create the topology for another demo Application called Sockshop
-		> * Starting with the main page called `front-end`
+		> * Let's create the topology for Bookinfo from scratch
+		> * Starting with the main page called `productpage`
 		
 		![](./pics/noi5.png)
 		
-		> * So I select to seed the view with the Frontend Deployment
+		> * So I select to seed the view with the Productpage
 			
 		![](./pics/noi6.png)
 		
@@ -200,7 +214,7 @@ Go back to back to the [Bookinfo Application](http://istio-ingressgateway-istio-
 	
 		![](./pics/noi7.png)
 	
-		> * And voilà I have a complete overview of the dependencies of my Sock Shop Application
+		> * And voilà I have a complete overview of the dependencies of my Bookinfo Application
 	
 	2. Show Delta
 

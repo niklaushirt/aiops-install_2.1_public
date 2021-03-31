@@ -15,7 +15,7 @@ echo "  Initializing......"
 
 echo "  Checking Config File......"
 
- if [[ $appgroupid1 =~ "not_configured" ]];
+ if [[ demoapps_bookinfo =~ "not_configured" ]];
   then
       echo "      ❗ ERROR: Please copy the 01_config.sh file that you have received by mail into this ./demo folder"
       echo "           ❌ Aborting."
@@ -39,7 +39,7 @@ echo "  Checking NOI WebHooks......"
 
  if [[ $checkConnection =~ "Cannot read property" ]];
   then
-      echo "      ✅ OK"
+      echo "      ✅ Humio OK"
   else 
       echo "      ❗ ERROR: Humio is not accessible"
       echo "           ❌ Aborting."
@@ -54,11 +54,9 @@ echo "  Checking NOI WebHooks......"
 
  if [[ $checkConnection =~ "deduplicationKey" ]];
   then
-      echo "      ✅ OK"
+      echo "      ✅ Git Webhook OK"
   else 
-      echo "      ❗ ERROR: Git Webhook is not accessible"
-      echo "           ❌ Aborting."
-      exit 1
+      echo "      ❗ WARNING: Git Webhook is not accessible"
   fi
 
   checkConnection=$(curl --insecure -X "POST" "$NETCOOL_WEBHOOK_METRICS" \
@@ -68,11 +66,9 @@ echo "  Checking NOI WebHooks......"
 
  if [[ $checkConnection =~ "deduplicationKey" ]];
   then
-      echo "      ✅ OK"
+      echo "      ✅ Metrics Webhook OK"
   else 
-      echo "      E❗ RROR: MEtrics Webhook is not accessible"
-      echo "           ❌ Aborting."
-      exit 1
+      echo "      ❗ WARNING: Metrics Webhook is not accessible"
   fi
 
 
@@ -83,13 +79,22 @@ echo "  Checking NOI WebHooks......"
 
  if [[ $checkConnection =~ "deduplicationKey" ]];
   then
-      echo "      ✅ OK"
+      echo "      ✅ Falco Webhook OK"
   else 
-      echo "      ❗ ERROR: Falco Webhook is not accessible"
-      echo "           ❌ Aborting."
-      exit 1
+      echo "      ❗ WARNING: Falco Webhook is not accessible"
   fi
 
+
+  checkConnection=$(curl --insecure -X "POST" "$NETCOOL_WEBHOOK_INSTANA" \
+     -H 'Content-Type: application/json; charset=utf-8' \
+     -H 'Cookie: d291eb4934d76f7f45764b830cdb2d63=90c3dffd13019b5bae8fd5a840216896') >/dev/null 2>&1
+
+ if [[ $checkConnection =~ "deduplicationKey" ]];
+  then
+      echo "      ✅ Instana Webhook OK"
+  else 
+      echo "      ❗ WARNING: Instana Webhook is not accessible"
+  fi
 
 
 
@@ -103,8 +108,16 @@ echo "      ✅   Checking Bookinfo......"
 oc scale --replicas=1  deployment ratings-v1 -n bookinfo
 
 echo ""
-echo "      ✅   Checking Sockshop......"
-oc scale --replicas=1  deployment catalogue -n sockinfo
+echo "      ✅   Checking RobotShop......"
+robot_cat_running=$(oc get deployment catalogue -n robot-shop)
+if [[ $robot_cat_running =~ "0/0" ]];
+then
+    oc scale --replicas=1  deployment catalogue -n robot-shop #>/dev/null 2>&1
+    oc delete pod -n robot-shop $(oc get po -n robot-shop|grep catalogue|awk '{print$1}') --force --grace-period=0 #>/dev/null 2>&1
+    oc delete pod -n robot-shop $(oc get po -n robot-shop|grep user|awk '{print$1}') --force --grace-period=0 #>/dev/null 2>&1
+    oc delete pod -n robot-shop $(oc get po -n robot-shop|grep shipping|awk '{print$1}') --force --grace-period=0 #>/dev/null 2>&1
+fi
+
 
 # echo "  Restarting Bookinfo......"
 #oc delete pods -n bookinfo --all

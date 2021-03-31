@@ -27,9 +27,9 @@
    
 - [ ] Install Kubetoy
  
-- [ ] Install SockShop
+- [ ] Install RobotShop
  
-	- [ ] Install SockShop generate load
+	- [ ] Install RobotShop generate load
    
    
 ## NOI Webhooks
@@ -80,16 +80,20 @@
    
 	- [ ] KubetoyAvailabilityProblem
    
-	- [ ] SockShopAvailability
+	- [ ] RobotShopCataloguePodProblem
    
-	- [ ] SockShopCatalogue
+	- [ ] RobotShopCatalogueProblem
+
+	- [ ] RobotShopWebProblem
+
+	- [ ] RobotShopFrontendProblem
 
 ## Train the Models
 - [ ] Prerequisite - adapt for ROKS S3 Storage
  
 - [ ] Training - Bookinfo 
  
-- [ ] Training - Sockshop 
+- [ ] Training - RobotShop 
  
 - [ ] Training - Kubetoy 
 
@@ -100,21 +104,21 @@
 
 - [ ] Create Humio Ops Integration on Bookinfo App
 
-- [ ] Create Humio Ops Integration on Sockshop App
+- [ ] Create Humio Ops Integration on RobotShop App
  
 - [ ] Create NOI Ops Integration on Bookinfo App
  
-- [ ] Create NOI Ops Integration  on Sockshop App
+- [ ] Create NOI Ops Integration  on RobotShop App
  
 - [ ] Create NOI Ops Integration  on Kubetoy App
  
    
-- [ ] Create Log Ops Integration on Bookinfo App
+- [ ] Create Log Ops Integration on Bookinfo App (optional)
 
 
 
 ## Configure Event Manager / ASM Topology
-- [ ] Load Topologies for Sockshop and Bookinfo
+- [ ] Load Topologies for RobotShop and Bookinfo
  
 - [ ] Create Templates
  
@@ -165,7 +169,7 @@
  
 - [ ] Integration
  
-- [ ] Change the Slash Welcome Message
+- [ ] Change the Slash Welcome Message (optional)
 
 
 ## Some Polishing
@@ -178,3 +182,5 @@
 - [ ] Create USER
  
 - [ ] Change admin password AI Manager
+
+## Check installation

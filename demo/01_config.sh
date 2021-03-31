@@ -8,6 +8,7 @@
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+
 # Webhooks for Event injection
 export NETCOOL_WEBHOOK_HUMIO=not_configured
 
@@ -23,14 +24,17 @@ export NETCOOL_WEBHOOK_INSTANA=not_configured
 
 
 # Bookinfo
-export appgroupid1=not_configured
-export appid1=not_configured
+export appgroupid_bookinfo=not_configured
+export appid_bookinfo=not_configured
+
+# Robotshop
+export appgroupid_robotshop=not_configured
+export appid_robotshop=not_configured
+
+
 # Kubetoy
-export appgroupid2=not_configured
-export appid2=not_configured
-# Sockshop
-export appgroupid3=not_configured
-export appid3=not_configured
+export appgroupid_kubetoy=not_configured
+export appid_kubetoy=not_configured
 
 # Only for Topology Load
 export NOI_REST_USR=demo-noi-topology-noi-user
@@ -96,7 +100,7 @@ cat <<EOF | kubectl apply -f -
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaTopic
 metadata:
-  name: normalized-alerts-$appgroupid-$appid 
+  name: normalized-alerts-demoapps-$appid 
   namespace: zen
   labels:
     strimzi.io/cluster: strimzi-cluster
@@ -107,12 +111,12 @@ spec:
     segment.bytes: '1073741824'
   partitions: 1
   replicas: 1
-  topicName: normalized-alerts-$appgroupid-$appid 
+  topicName: normalized-alerts-demoapps-$appid 
 ---
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaTopic
 metadata:
-  name: windowed-logs-$appgroupid-$appid 
+  name: windowed-logs-demoapps-$appid 
   namespace: zen
   labels:
     strimzi.io/cluster: strimzi-cluster
@@ -123,7 +127,7 @@ spec:
     segment.bytes: '1073741824'
   partitions: 1
   replicas: 1
-  topicName: windowed-logs-$appgroupid-$appid 
+  topicName: windowed-logs-demoapps-$appid 
 EOF
 }
 
@@ -185,7 +189,7 @@ get_sed(){
   if [ "${OS}" == "darwin" ]; then
       SED="gsed"
       if [ ! -x "$(command -v ${SED})"  ]; then
-      __output "This script requires $SED, but it was not found.  Perform \"brew install gnu-sed\" and try again."
+      echo "This script requires $SED, but it was not found.  Perform \"brew install gnu-sed\" and try again."
       exit
       fi
   fi

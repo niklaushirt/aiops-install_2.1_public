@@ -13,7 +13,15 @@ humio-fluentbit:
   inputConfig: |-
     [INPUT]
         Name             tail
-        Path             /var/log/containers/*info_*.log
+        Path             /var/log/containers/*bookinfo_*.log
+        Parser           docker
+        Tag              kube.*
+        Refresh_Interval 5
+        Mem_Buf_Limit    256MB
+        Skip_Long_Lines  On
+    [INPUT]
+        Name             tail
+        Path             /var/log/containers/*robot-shop_*.log
         Parser           docker
         Tag              kube.*
         Refresh_Interval 5

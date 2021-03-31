@@ -1,20 +1,12 @@
 echo "Pushing Bookinfo to GitHub"
 
-echo "."
-oc scale --replicas=0  deployment ratings-v1 -n bookinfo >/dev/null 2>&1
-oc delete pod -n bookinfo $(oc get po -n bookinfo|grep ratings-v1|awk '{print$1}') --force --grace-period=0 >/dev/null 2>&1
-echo "."
-
-
-sleep 5
-
 
 
 if [[ $NETCOOL_WEBHOOK_GIT == "not_configured" ]] || [[ $NETCOOL_WEBHOOK_GIT == "" ]]
 then
       echo ".."
 else
-      input="./bookinfo/git_push.json"
+      input="./bookinfo/events_git.json"
       while IFS= read -r line
       do
         export my_timestamp=$(date +%s)000
@@ -36,7 +28,7 @@ if [[ $NETCOOL_WEBHOOK_FALCO == "not_configured" ]] || [[ $NETCOOL_WEBHOOK_FALCO
 then
       echo ".."
 else
-      input="./bookinfo/falco_push.json"
+      input="./bookinfo/events_falco.json"
       while IFS= read -r line
       do
         export my_timestamp=$(date +%s)000
@@ -57,7 +49,7 @@ if [[ $NETCOOL_WEBHOOK_METRICS == "not_configured" ]] || [[ $NETCOOL_WEBHOOK_MET
 then
       echo ".."
 else
-      input="./bookinfo/metrics_push.json"
+      input="./bookinfo/events_metrics.json"
       while IFS= read -r line
       do
         export my_timestamp=$(date +%s)000
@@ -78,7 +70,7 @@ if [[ $NETCOOL_WEBHOOK_INSTANA == "not_configured" ]] || [[ $NETCOOL_WEBHOOK_INS
 then
       echo ".."
 else
-      input="./bookinfo/instana_push.json"
+      input="./bookinfo/events_instana.json"
       while IFS= read -r line
       do
         export my_timestamp=$(date +%s)000
@@ -98,7 +90,7 @@ if [[ $NETCOOL_WEBHOOK_HUMIO == "not_configured" ]] || [[ $NETCOOL_WEBHOOK_HUMIO
 then
       echo ".."
 else
-      input="./bookinfo/error_event.json"
+      input="./bookinfo/events_humio.json"
       while IFS= read -r line
       do
         export my_timestamp=$(date +%s)000
@@ -115,13 +107,14 @@ fi
 
 echo "---"
 
+exit 1
 
-if [[ $appgroupid1 == "not_configured" ]];
+if [[ demoapps_bookinfo == "not_configured" ]];
 then
     echo "Skipping Log Anomaly injection"
 else
 
-    export LOGS_TOPIC=logs-humio-$appgroupid1-$appid1
+    export LOGS_TOPIC=logs-humio-demoapps_bookinfo-$appid_bookinfo
 
     #echo "Injecting into Topic $LOGS_TOPIC"
 
@@ -134,7 +127,7 @@ else
     export BROKER=$(oc get routes strimzi-cluster-kafka-bootstrap -n zen -o=jsonpath='{.status.ingress[0].host}{"\n"}'):443
       
     #input="./bookinfo/bookinfo-error-inject.json"
-    input="./bookinfo/error_log.json"
+    input="./bookinfo/log_errors.json"
     while IFS= read -r line
     do
       export my_timestamp=$(date +%s)000

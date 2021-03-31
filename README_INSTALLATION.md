@@ -1,6 +1,8 @@
 # Watson AIOps Demo Environment Installation
 
 
+This is a collection of scripts from Niklaus Hirt to install Watson AIOps. The scripts can all be found in the https://github.ibm.com/up-and-running/watson-aiops/tree/master/docs/automations/nik_installation git repo under automations
+
 
 ---------------------------------------------------------------------------------------------------------------
 ## NEW: ℹ️ Offline Click Through Demo
@@ -19,7 +21,11 @@ The file is [AIOps INTERACTIVE DEMO 2021](./AIOps_INTERACTIVE_DEMO_2021_V9.ppsx)
 |  01 Mar 2021 | New version of Bookinfo  | bookinfo.yaml, training log files  |
 |  02 Mar 2021 | Incident injection for Bookinfo with Git, Falco, Metrics and Instana  | Demo files in bookinfo  |
 |  03 Mar 2021 | Stripped control characters for non zsh shells  | Installation files  |
-|  04 Mar 2021 | Added install checklist  | README_INSTALLATION_CHECKLIST.md  |
+|  04 Mar 2021 | Added install checklist  | README\_INSTALLATION\_CHECKLIST.md  |
+|  19 Mar 2021 | Added RobotShop  |   |
+|  22 Mar 2021 | Removed Sockshop  |   |
+|  30 Mar 2021 | New script to check install  |   |
+|  31 Mar 2021 | Clarifications based on Feedback  |   |
 |   |   |   | 
 
 
@@ -127,6 +133,7 @@ The scripts are in /docs/automations/nik_installation
 cd docs/automations/nik_installation
 ```
 
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Architecture
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -148,6 +155,7 @@ At the same time Event Manager launches an automated Runbook to correct the prob
 
 
 
+**ℹ️❗Added the `./12_check-aiops-install.sh` script to check some elements of the installation**
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -170,12 +178,12 @@ This will install:
 
 - AI Manager
 - Event Manager (NOI)
-- ASM
+- Topology Manager (ASM) - Installed as part of Event Manager
 
 
 ### Create NOI User that can see Topology
 
-* Log-in to Noi (you can get all login information by running `./80_get_logins.sh`)
+* Log-in to NOI (you can get all login information by running `./80_get_logins.sh`)
 * Netcool WebGUI --> Top Right click on cog --> WebSphere Administrative Console
 * Users and Groups
 * Manage Groups --> Create Group "admin" 
@@ -209,7 +217,7 @@ In this Group create three Applications:
 
 - Bookinfo
 - Kubetoy
-- Sockshop
+- RobotShop
 
 > In my latest demos I create a separate AppGroup per Application to get a different Slack channel per App.
 > 
@@ -250,9 +258,19 @@ oc apply -n bookinfo -f ./demo_install/bookinfo/bookinfo.yaml
 
 ```
 
-> Note: if you want to use the classic version, please use `./demo_install/bookinfo/bookinfo-classic.yaml`
-> 
-> And you also have to do the training with the `log-bookinfo-classic.json.gz` file
+### Install Classic Bookinfo
+
+If you want to use the classic version, please use `./demo_install/bookinfo/bookinfo-classic.yaml`
+ 
+And you also have to do the training with the `log-bookinfo-classic.json.gz` file.
+
+Just copy it over the `log-bookinfo.json` file and train as usual.
+
+	```bash
+	cp tools/5_training/2_logs/trainingdata/raw/log-bookinfo.json.gz tools/5_training/2_logs/trainingdata/raw/log-bookinfo.json-new.gz 
+	
+	mv tools/5_training/2_logs/trainingdata/raw/log-bookinfo-classic.json.gz tools/5_training/2_logs/trainingdata/raw/log-bookinfo.json
+	```
 
 
 #### Install Bookinfo generate load
@@ -262,6 +280,32 @@ This generates constant load on the Bookinfo app
 ```bash
 oc apply -n default -f ./demo_install/bookinfo/bookinfo-create-load.yaml
 ```
+
+
+### Install RobotShop
+
+**ℹ️❗I have deprecated Sockshop in favor of Robotshop as it integrates with Instana**
+
+```bash
+oc create ns robot-shop
+
+oc adm policy add-scc-to-user privileged -n robot-shop -z robot-shop
+oc create clusterrolebinding default-robotinfo1-admin --clusterrole=cluster-admin --serviceaccount=robot-shop:robot-shop
+
+
+kubectl apply -f ./demo_install/robotshop/robot-all-in-one.yaml -n robot-shop
+
+```
+
+
+#### Install RobotShop generate load
+
+This generates constant load on the Bookinfo app
+
+```bash
+kubectl apply -n robot-shop -f ./demo_install/robotshop/load-deployment.yaml
+```
+
 
 
 
@@ -275,25 +319,6 @@ kubectl apply -n kubetoy -f ./demo_install/kubetoy/kubetoy_all_in_one.yaml
 
 
 
-### Install SockShop 
-
-```bash
-kubectl create ns sock-shop
-
-oc adm policy add-scc-to-user privileged -n sock-shop -z default
-oc create clusterrolebinding default-sock-shop-admin --clusterrole=cluster-admin --serviceaccount=sock-shop:default
-
-kubectl apply -n sock-shop -f ./demo_install/sockshop/sockshop-complete.yaml
-```
-
-#### Install SockShop generate load
-
-This generates constant load on the SockShop app
-
-```bash
-kubectl apply -n default -f ./demo_install/sockshop/sockshop-create-load.yaml
-```
-
 
 ---------------------------------------------------------------------------------------------------------------
 ## NOI Webhooks
@@ -301,7 +326,7 @@ kubectl apply -n default -f ./demo_install/sockshop/sockshop-create-load.yaml
 
 Create Webhooks in NOI for Event injection and incident simulation for the Demo.
 
-The `demo.sh` script (in the `demo` folder) gives you the possibility to simulate an outage without relying on the integrations with other systems.
+The `demo.sh` and `gitpush_xxx` scripts (in the `demo` folder) give you the possibility to simulate an outage without relying on the integrations with other systems.
 
 At this time it simulates:
 - Git push event
@@ -310,6 +335,8 @@ At this time it simulates:
 - Humio Events
 - Instana Events
 
+* `demo.sh`: Menu based simulations
+* `gitpush_xxx`: Silent simulation, might be better for demoing
 
 You have to define the Webhooks in Event Manager (NOI):
 
@@ -499,7 +526,7 @@ Then
 * Save
 
 
-### Create NOI Menu item - Delete Events
+### Create NOI Menu item - Delete Events (optional)
 
 This creates a menu entry that deletes all events that have the same AlertGroup as the selected line.
 
@@ -531,7 +558,7 @@ Then
 ## HUMIO
 ------------------------------------------------------------------------------
 
-> ❗I have upped the size of the Kafka PVCs to 50GB as the standard 5GB was way too low. This is done automatically
+> ❗I have upped the size of the Kafka PVCs to 50GB as the standard 5GB was way too low. This is done automatically now by the script.
 
 ### Install HUMIO
 
@@ -593,6 +620,8 @@ And restart the `humio-instance-humio-core-0` Pod !
 * Get Ingest token (Settings --> API tokens)
 
 ### Limit retention
+
+This is important as your PVCs will fill up otherwise and Humio can become unavailable.
 
 #### Change retention size for aiops
 
@@ -663,7 +692,11 @@ Click on Alerts -> `+ New Alert`
 
 Create the following Alerts as shown in the picture
 
+![](./pics/humio2.png)
+
 ![](./pics/humio1.png)
+
+❗**IMPORTANT**: Number `2` is especially important because otherwise the messages pushed to NOI get too big and NOI cannot ingest them.
 
 #### BookinfoProblem
 
@@ -731,39 +764,121 @@ Notification Frequency: 1 min
 ```
 
 
-#### SockShopAvailability
+#### RobotShopCataloguePodProblem
 
 ```yaml
-"kubernetes.namespace_name" = sock-shop 
-| "kubernetes.pod_name" = /carts|front-end/i |  "kubernetes.pod_name" != /carts-db|catalogue-db/i | stripAnsiCodes(@rawstring)
-| "@rawstring" = /catalogue 500 /i
+"kubernetes.namespace_name" = "robot-shop"
+| @rawstring = /"GET \/\/api\/catalogue\/categories HTTP\/1.1" 502 /i
+| "kubernetes.container_name" = web-deployment
 
 Last 5s
 
-resource.name=\"front-end\" severity=Critical resource.hostname=front-end type.eventType=\"sockshop\"
+resource.name=\"catalogue\" severity=Critical resource.hostname=catalogue-pod type.eventType=\"robotshop\"
 
 Notification Frequency: 1 min
 ```
 
 
 
-#### SockShopCatalogue
+#### RobotShopCatalogueProblem
 
 ```yaml
-"kubernetes.namespace_name" = sock-shop 
-| "kubernetes.pod_name" = /carts|front-end/i |  "kubernetes.pod_name" != /carts-db|catalogue-db/i | stripAnsiCodes(@rawstring)
-| "@rawstring" = /catalogue 500 /i
+"kubernetes.namespace_name" = "robot-shop"
+| @rawstring = /"GET \/\/api\/catalogue\/categories HTTP\/1.1" 502 /i
+| "kubernetes.container_name" = web-deployment
 
 Last 5s
 
-resource.name=\"catalogue\" severity=Critical resource.hostname=catalogue type.eventType=\"sockshop\"
+resource.name=\"catalogue\" severity= Major resource.hostname=catalogue type.eventType=\"robotshop\"
+Notification Frequency: 1 min
+```
+
+
+#### RobotShopWebProblem
+
+```yaml
+"kubernetes.namespace_name" = "robot-shop"
+| @rawstring = /"GET \/\/api\/catalogue\/categories HTTP\/1.1" 502 /i
+| "kubernetes.container_name" = web-deployment
+
+Last 5s
+
+resource.name=\"web\" severity=Minor resource.hostname=web-deployment type.eventType=\"robotshop\"
 
 Notification Frequency: 1 min
 ```
+
+#### RobotShopFrontendProblem
+
+```yaml
+"kubernetes.namespace_name" = "robot-shop"
+| @rawstring = /"GET \/\/api\/catalogue\/categories HTTP\/1.1" 502 /i
+| "kubernetes.container_name" = web-deployment
+
+Last 5s
+
+resource.name=\"web\" severity=Minor resource.hostname=web-deployment type.eventType=\"robotshop\"
+
+Notification Frequency: 1 min
+```
+
 
 > You can test by creating a Notifier with https://webhook.site/
 
 
+### Check Alerts
+
+When you have defined your Alerts and Notifier you can test them by scaling down the pod:
+
+1. Scale down:
+
+	Bookinfo
+	
+	```bash
+	oc scale --replicas=0  deployment ratings-v1 -n bookinfo
+	```
+	
+	Robotshop
+	
+	```bash
+	oc scale --replicas=0  deployment catalogue -n robot-shop
+	```
+
+
+2. Check Alerts:
+
+	You should get some log lines matching the alert filter:
+	
+	![](./pics/humio3.png)
+	
+	If not, either you don't receive logs or your filters/alert definitions are wrong.
+	
+2. Check Notifications:
+
+	You should get "Last triggered: ..." for each Alert:
+	
+	![](./pics/humio4.png)
+	
+	If not, your Notifier is incorrectly defined. Check the NOI Webhook URL.
+
+3. Restore apps:
+
+	Don't forget to scale them back up:
+	
+	Bookinfo
+	
+	```bash
+	oc scale --replicas=0  deployment ratings-v1 -n bookinfo
+	```
+	
+	Robotshop
+	
+	```bash
+	oc scale --replicas=0  deployment catalogue -n robot-shop
+	oc delete pod -n robot-shop $(oc get po -n robot-shop|grep catalogue|awk '{print$1}') --force --grace-period=0
+	oc delete pod -n robot-shop $(oc get po -n robot-shop|grep user|awk '{print$1}') --force --grace-period=0
+	
+	```
 
 
 ---------------------------------------------------------------------------------------------------------------
@@ -803,7 +918,7 @@ Kubetoy:
 - Events
 - Similar Incidents
 
-Sockshop:
+RobotShop:
 
 - Log Anomaly
 - Events
@@ -821,7 +936,7 @@ Modify the parameters at the top of the `./tools/5_training/train-<APP>.sh` file
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # ADAPT VALUES
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-export application_name=<APP>. (bookinfo, sockshop, kubetoy)
+export application_name=<APP>. (bookinfo, robotshop, kubetoy)
 export appgroupid=<YOUR APPGROUP ID>
 export appid=<YOUR APP ID>
 export version=1
@@ -835,9 +950,9 @@ Then run the following:
 
 This will:
 
-* upload the training files for the application to the training pod
-* output the code that you will have to run in the training pod and 
-* open a shell in the training pod.
+1. upload the training files for the application to the training pod
+1. output the code that you will have to run in the training pod and 
+1. open a shell in the training pod where you can run the commands from step 2.
 
 So just run the script until you get the prompt.
 
@@ -863,9 +978,11 @@ You can find the steps in the `tools/5_training` folder.
 
 [Training Bookinfo](./tools/5_training/TRAINING_BOOKINFO.md)
 
+[Training Bookinfo](./tools/5_training/TRAINING_ROBOTSHOP.md)
+
 [Training Kubetoy](./tools/5_training/TRAINING_KUBETOY.md)
 
-[Training Sockshop](./tools/5_training/TRAINING_SOCKSHOP.md)
+
 
 
 Use the AppGroup and App IDs from the above step.
@@ -883,11 +1000,11 @@ Please bear in mind that Event and Log Anomaly training takes some time!
 
 ### Create Humio Ops Integrations
 
-Do this for Bookinfo and Sockshop
+Do this for Bookinfo and RobotShop
 
 #### URL
 
-Get the Humio URL from your browser
+Get the Humio Base URL from your browser
 
 Add at the end `/api/v1/repositories/aiops/query`
 
@@ -907,9 +1024,11 @@ Get it from Humio --> Owl in the top right corner --> Your Account --> API Token
 or
 
 ```yaml
-"kubernetes.namespace_name" = sock-shop
-| "kubernetes.container_name" = front-page
+ "kubernetes.namespace_name" = "robot-shop"
+| "kubernetes.container_name" = web-deployment
 ```
+
+
 
 #### Mapping
 
@@ -930,7 +1049,7 @@ or
 ### Create NOI Ops Integration
 
 
-Do this for Bookinfo, Sockshop and Kubetoy
+Do this for Bookinfo, RobotShop and Kubetoy
 
 Create Ops Integration
 
@@ -940,7 +1059,7 @@ Create Ops Integration
 * Ops integration mapping type --> Netcool
 
 
-### Create Log Ops Integration
+### Create Log Ops Integration (optional)
 
 For Bookinfo:
 
@@ -976,7 +1095,7 @@ Create Ops Integration --> Apache Kafka --> Next --> Logs / Humio and use the ma
 * Set Provider to whatever you like (usually I set it to “listenJob” as well)
 * Save
 
-### Load Topologies for Sockshop and Bookinfo
+### Load Topologies for RobotShop and Bookinfo
 
 ```bash
 cd demo
@@ -985,7 +1104,7 @@ cd demo
 
 Select option 1, 2 or 3.
 
-This will create Topologies for the three Applications
+This will create Topologies for one of the three Applications.
 
 
 ### Create Templates
@@ -993,7 +1112,7 @@ This will create Topologies for the three Applications
 Go to Netcool WebGUI
 Administration-->Topology Template
 
-Create a template for Bookinfo and Sockshop:
+Create a template for Bookinfo and RobotShop:
 
 Bookinfo:
 * Search for productpage-v1 (deployment)
@@ -1003,12 +1122,12 @@ Bookinfo:
 * Add tag `app:bookinfo`
 * Save
 
-Sockshop:
-* Search for front-end (deployment)
+RobotShop:
+* Search for web (deployment)
 * Create Topology 3 Levels
 * Select Dynamic
 * Enable "Correlate event groups on topologies from this template"
-* Add tag `app:sockshop`
+* Add tag `app:robotshop`
 * Save
 
 Kubetoy:
@@ -1018,7 +1137,7 @@ Kubetoy:
 * Enable "Correlate event groups on topologies from this template"
 * Save
 
-
+> If you want to add templates to the Topology Dashboard just click the Star icon for the Topology you want included. 
 
 
 ### Create grouping Policy
@@ -1066,11 +1185,14 @@ oc login --token=$token --server=$ocp_url
 kubectl scale deployment --replicas=1 -n bookinfo ratings-v1
 ```
 
-Sockshop
+
+Robotshop
 
 ```bash
 oc login --token=$token --server=$ocp_url
-oc scale --replicas=1  deployment catalogue -n sock-shop
+kubectl scale deployment --replicas=1 -n robot-shop mongodb
+oc delete pod -n robot-shop $(oc get po -n robot-shop|grep catalogue|awk '{print$1}') --force --grace-period=0
+oc delete pod -n robot-shop $(oc get po -n robot-shop|grep user|awk '{print$1}') --force --grace-period=0
 ```
 
 Use these default values
@@ -1111,7 +1233,7 @@ kubectl delete pod -n NAMESPACE <your-pod-id>
 
 Automated --> Use the Automation created above
 
-**Sockshop Catalogue**
+** RobotShop Catalogue**
 
 Automated --> Use the Automation created above
 
@@ -1125,7 +1247,7 @@ Create new trigger for
 
 * Kubetoy
 * Bookinfo
-* Sockshop
+* RobotShop
 
 based on Alert Group
 
@@ -1180,7 +1302,8 @@ Copy the templates to be modified
 ```bash
 cp ./tools/3_integrationgateway/nikh-bookinfo-demo-noi-aimgr-gateway-config-template.yaml ./tools/3_integrationgateway/nikh-bookinfo-demo-noi-aimgr-gateway-config-template_XXXX.yaml
 cp ./tools/3_integrationgateway/nikh-kubetoy-demo-noi-aimgr-gateway-config-template.yaml ./tools/3_integrationgateway/nikh-kubetoy-demo-noi-aimgr-gateway-config-template_XXXX.yaml
-cp ./tools/3_integrationgateway/nikh-sockshop-demo-noi-aimgr-gateway-config-template.yaml ./tools/3_integrationgateway/nikh-sockshop-demo-noi-aimgr-gateway-config-template_XXXX.yaml
+cp ./tools/3_integrationgateway/nikh-robotshop-demo-noi-aimgr-gateway-config-template.yaml ./tools/3_integrationgateway/nikh-robotshop-demo-noi-aimgr-gateway-config-template_XXXX.yaml
+
 
 ```
 
@@ -1198,9 +1321,8 @@ kubectl apply -n noi -f ./tools/3_integrationgateway/nikh-bookinfo-demo-noi-aimg
 kubectl apply -n noi -f ./tools/3_integrationgateway/nikh-kubetoy-demo-noi-aimgr-gateway-config-template_XXXX.yaml
 kubectl apply -n noi -f ./tools/3_integrationgateway/nikh-kubetoy-demo-noi-aimgr-gateway.yaml
 
-kubectl apply -n noi -f ./tools/3_integrationgateway/nikh-sockshop-demo-noi-aimgr-gateway-config-template_XXXX.yaml
-kubectl apply -n noi -f ./tools/3_integrationgateway/nikh-sockshop-demo-noi-aimgr-gateway.yaml
-
+kubectl apply -n noi -f ./tools/3_integrationgateway/nikh-robotshop-demo-noi-aimgr-gateway-config-template_XXXX.yaml
+kubectl apply -n noi -f ./tools/3_integrationgateway/nikh-robotshop-demo-noi-aimgr-gateway.yaml
 ```
 
 
@@ -1225,7 +1347,7 @@ oc get secret demo-noi-topology-topology-cert -n noi -o yaml | grep tls.crt | aw
 #### Input values
 
 * Get Username from `./80_get__logins.sh`  (Usually something like demo-noi-topology-topology)
-* Get Password from `./80_get_logins.sh`>
+* Get Password from `./80_get_logins.sh`
 
 * Topology URL : https://demo-noi-topology-topology.noi.svc:8080
 * Layout URL : https://demo-noi-topology-layout.noi.svc:7084
@@ -1287,7 +1409,7 @@ A copy of those instructions are here: ./4_integrations/slack
 
 Thanks Robert Barron!
 
-### Change the Slash Welcome Message
+### Change the Slash Welcome Message (optional)
 
 If you want to change the welcome message
 
@@ -1308,7 +1430,7 @@ oc set env deployment/$(oc get deploy -l app.kubernetes.io/component=chatops-sla
 If not done in the script 
 
 ```bash
-oc create route passthrough job-manager -n zen --service=demo-ai-manager-ibm-flink-job-manager --port=8000
+oc create route passthrough job-manager -n zen --service=demo-aimanager-ibm-flink-job-manager --port=8000
 ```
 
 ### Check if installation is ok
@@ -1343,39 +1465,28 @@ kafkacat -v -X security.protocol=SSL -X ssl.ca.location=./ca.crt -X sasl.mechani
 ### Create USER
 
 ```bash
-kubectl create serviceaccount -n zen demo-admin
-
-oc create clusterrolebinding test-admin --clusterrole=cluster-admin --serviceaccount=zen:demo-admin
+kubectl create serviceaccount -n default demo-admin
+oc create clusterrolebinding test-admin --clusterrole=cluster-admin --serviceaccount=default:demo-admin
 ```
 
-Get the login Token from secret demo-admin-token-xyz in Namespace zen
 
 You can then login with:
 
 ```bash
-oc login --server=https://<REPLACE>.containers.cloud.ibm.com:<REPLACE> --token=<TOKEN> 
+DEMO_TOKEN=$(oc -n default get secret $(oc get secret -n default |grep -m1 demo-admin-token|awk '{print$1}') -o jsonpath='{.data.token}'|base64 -d)
+DEMO_URL=$(oc status|grep -m1 "In project"|awk '{print$6}')
+echo  "oc login --token=$DEMO_TOKEN --server=$DEMO_URL"
 
 ```
 
 
-### Change admin password AI Manager
-
-Modify the `admin-user-details`secret in zen
-
-Replace 
-
-initial_admin_password: cGFzc3dvcmQ=
-
-with 
-
-initial_admin_password: UDRzc3cwcmQh
-
-Restart Pod
 
 
-# Demo Assets
+# Check installation
 
-Make sure you have updated the config file ./demo/01_config.sh
+Launch the `./12_check-aiops-install.sh` script to check some elements of the installation
+
+
 
 
 

@@ -7,14 +7,11 @@
 
 
 
-# Name of the Application (bookinfo, sockshop, kubetoy)
+# Name of the Application (bookinfo, kubetoy, robotshop)
 export application_name=bookinfo
-export appgroupid=zjecaqq2
-export appid=nir5ix68
+export appgroupid=n51tyxgo
+export appid=l7stlblk
 export version=1
-
-
-
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -242,8 +239,9 @@ printForTrainingPod "python3 train_pipeline.pyc -p "log" -g "$appgroupid" -a "$a
 echo "  "
 echo "  "
 echo "#----------------------------------------------------------------------------------------------------------------------------------------"
-echo "# If you get errors (error copying files log-model/training-...)"
+echo "# If you get errors (error date or copying files log-model/training-...)"
 echo "#----------------------------------------------------------------------------------------------------------------------------------------"
+printForTrainingPod "python3 train_pipeline.pyc -p "log" -g "$appgroupid" -a "$appid" -v "$version"  --retrain '{\"start_time\":\"2021-03-30\",\"end_time\":\"2021-03-31\"}"
 printForTrainingPod "python3 deploy_model.pyc -p "log" -g "$appgroupid" -a "$appid" -v "$version""
 
 echo "  "

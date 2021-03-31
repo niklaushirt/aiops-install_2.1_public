@@ -110,6 +110,8 @@ python3 train_pipeline.pyc -p "log" -g "$appgroupid" -a "$appid" -v "$version"
 ```
 
 
+python3 train_pipeline.pyc -p log -g n51tyxgo -a l7stlblk -v 1 --retrain '{"start_time":"2021-03-30","end_time":"2021-03-31"}' 
+python3 deploy_model.pyc -p log -g n51tyxgo -a l7stlblk -v 1
 
 
 

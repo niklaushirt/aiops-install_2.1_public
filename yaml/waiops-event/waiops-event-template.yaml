@@ -67,7 +67,7 @@ spec:
       appdynamics: false
       jenkins: false
       zabbix: false
-      file: false
+      file: true
       googlecloud: false
       dynatrace: false
       aws: false

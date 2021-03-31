@@ -66,30 +66,30 @@
 source ./01_config.sh
 
 menu_option_one () {
-  echo "Simulate failure in BookInfo App (stop Ratings service)"
+  echo "🧨 Simulate failure in BookInfo App (stop Ratings service)"
   ./bookinfo/simulate-incident.sh
 }
 
 menu_option_two() {
-  echo "Simulate failure in Kubetoy App (Liveness Probe error )"
+  echo "🧨 Simulate failure in Kubetoy App (Liveness Probe error )"
   ./kubetoy/simulate-incident.sh
 }
 
 menu_option_three() {
-  echo "Simulate failure in SockShop App (stop Catalogue Service)"
+  echo "🧨 Simulate failure in RobotShop App (stop MongoDB)"
   echo "	Press Enter to start, press CTRL-C to stop "
-  ./sockshop/simulate-incident.sh
+  ./robotshop/simulate-incident.sh
 }
 
 
 menu_option_11() {
-  echo "Mitigate failure in BookInfo App (start Ratings service)"
+  echo "✅ Mitigate failure in BookInfo App (start Ratings service)"
   ./bookinfo/remove-incident.sh
 }
 
 menu_option_12() {
-  echo "Mitigate failure in Sockshop App (start Ratings service)"
-  ./sockshop/remove-incident.sh
+  echo "✅ Mitigate failure in RobotShop App (start Catalogue service)"
+  ./robotshop/remove-incident.sh
 }
 
 menu_option_seven() {
@@ -127,11 +127,11 @@ until [ "$selection" = "0" ]; do
   echo "  🧰 Simulate Service Failures "
   echo "    	1  - [BookInfo] Simulate failure in BookInfo App (inject failure logs)"
   echo "    	2  - [Kubetoy]  Simulate Liveness Probe error in Kubetoy App"
-  echo "    	3  - [Sockshop] Simulate failure in SockShop App (inject failure logs)"
+  echo "    	3  - [RobotShop] Simulate failure in RobotShop App (inject failure logs)"
   echo "      "
   echo "  ✅ Mitigate Service Failures "
   echo "    	11  - [BookInfo] Mitigate failure in BookInfo App (start Ratings service)"
-  echo "    	12  - [Sockshop] Mitigate failure in Sockshop App (start Catalogue service)"
+  echo "    	12  - [RobotShop] Mitigate failure in RobotShop App (start Catalogue service)"
   echo "" 
   echo ""
   echo "    	0  -  Exit"
