@@ -300,6 +300,7 @@ export INDENT=""
                 __output "    ❗   ERROR: Storage Class $STORAGE_CLASS_FILE does not exist."
                 __output "                 On IBM ROKS use: ibmc-file-gold-gid"
                 __output "                 On TEC use:      nfs-client"
+                __output "                 On FYRE use:     rook-cephfs (you can install Rook/Ceph with ./22_install_rook.sh"
                 __output "            Please set the correct storage class in file 01_config-modules.sh"
                 __output "           ❗ Aborting."
                 exit 1
@@ -605,164 +606,47 @@ function progressbar {
         } 
 
 
+  
 
         function printComponentsInstall() {
 
-            __output " 📦 CP4MCM Foundation"
+            __output "     📦 CP4WAIOPS"
 
-            if [[ $INSTALL_CP4MCM_FOUNDATION == true ]]; 
-            then
-                __output "      'CP4MCM Foundation' will be installed"
-            else
-                __output "      'CP4MCM Foundation' ❗ will NOT be installed"
+            __output "          ✅ 'CP4WAIOPS' will be installed with size: $WAIOPS_AI_MGR_SIZE"
+         
 
-            fi
-
-  
-            __output "        'Common Services' will be registered with size '$CS_SIZE'"
-
-
-            if [[ $INSTALL_MON_REG_HUB == true ]]; 
-            then
-                __output "        'MCM HUB' will be registered for monitoring with  with CP4MCM"
-            else
-                __output "        'MCM HUB' ❗ will NOT be registered for monitorng "
-
-            fi
 
             __output ""
-            __output " 📦 Infrastructure Management Module"
-            if [[ $INSTALL_INFRA_CAM == true ]]; 
+            __output "     📦 Rook/Ceph"
+            if [[ $INSTALL_ROOK_SC == true ]]; 
             then
-                __output "      'Infrastructure Automation' will be installed"
+                __output "          ✅ 'Rook/Ceph' will be installed"
             else
-                __output "      'Infrastructure Automation' ❗ will NOT be installed"
-
-            fi
-
-
-            if [[ $INSTALL_INFRA_VM == true ]]; 
-            then
-                __output "      'Infrastructure VM' will be installed"
-            else
-                __output "      'Infrastructure VM' ❗ will NOT be installed"
-
-            fi
-
-            __output ""
-            __output " 📦 Monitoring Module"
-            if [[ $INSTALL_MON_MONITORING == true ]]; 
-            then
-                __output "      'Monitoring' will be installed"
-            else
-                __output "      'Monitoring' ❗ will NOT be installed"
+                __output "          ⭕ 'Rook/Ceph' will NOT be installed"
 
             fi
 
 
             __output ""
-            __output " 📦 Security"
-            if [[ $INSTALL_MCMCIS == true ]]; 
+            __output "     📦 Humio"
+            if [[ $INSTALL_HUMIO == true ]]; 
             then
-                __output "      'CIS Controller' will be installed"
+                __output "          ✅ 'Humio' will be installed"
             else
-                __output "      'CIS Controller' ❗ will NOT be installed"
+                __output "          ⭕ 'Humio' will NOT be installed"
 
             fi
 
-            if [[ $INSTALL_MCMMUT == true ]]; 
-            then
-                __output "      'Mutation Advisor' will be installed"
-            else
-                __output "      'Mutation Advisor' ❗ will NOT be installed"
-
-            fi
-
-            if [[ $INSTALL_MCMNOT == true ]]; 
-            then
-                __output "      'Notary' will be installed"
-            else
-                __output "      'Notary' ❗ will NOT be installed"
-
-            fi
-
-            if [[ $INSTALL_MCMIMGSEC == true ]]; 
-            then
-                __output "      'Image Security Enforcment' will be installed"
-            else
-                __output "      'Image Security Enforcment' ❗ will NOT be installed"
-
-            fi
-
-            if [[ $INSTALL_MCMVUL == true ]]; 
-            then
-                __output "      'Vulnerability Advisor ' will be installed"
-            else
-                __output "      'Vulnerability Advisor ' ❗ will NOT be installed"
-
-            fi
-
-
+        
             __output ""
-            __output " 📦 Operations"
-            if [[ $INSTALL_OPS_CHAT == true ]]; 
+            __output "     📦 OpenLDAP"
+            if [[ $INSTALL_SEPARATE_LDAP == true ]]; 
             then
-                __output "      'SRE Chatops' will be installed"
+                __output "          ✅ 'OpenLDAP' will be installed"
             else
-                __output "      'SRE Chatops' ❗ will NOT be installed"
+                __output "          ⭕ 'OpenLDAP' will NOT be installed"
 
             fi
-
-
-            __output ""
-            __output " 📦 Technology Preview"
-            if [[ $INSTALL_TP_MNG_RT == true ]]; 
-            then
-                __output "      'Manage Runtimes' will be installed"
-            else
-                __output "      'Manage Runtimes' ❗ will NOT be installed"
-
-            fi
-
-
-
-            __output ""
-            __output " 📦 Additional Components"
-            if [[ $INSTALL_LDAP == true ]]; 
-            then
-                __output "      'LDAP' will be installed"
-            else
-                __output "      'LDAP' ❗ will NOT be installed"
-
-            fi
-
-
-            if [[ $INSTALL_ANSIBLE == true ]]; 
-            then
-                __output "      'ANSIBLE' will be installed"
-            else
-                __output "      'ANSIBLE' ❗ will NOT be installed"
-
-            fi
-
-
-            if [[ $INSTALL_TURBO == true ]]; 
-            then
-                __output "      'TURBONOMIC' will be installed"
-            else
-                __output "      'TURBONOMIC' ❗ will NOT be installed"
-
-            fi
-
-
-             if [[ $INSTALL_DEMO == true ]]; 
-            then
-                __output "      'Demo Assets' will be installed"
-            else
-                __output "      'Demo Assets' ❗ will NOT be installed"
-
-            fi
-
         } 
 
  

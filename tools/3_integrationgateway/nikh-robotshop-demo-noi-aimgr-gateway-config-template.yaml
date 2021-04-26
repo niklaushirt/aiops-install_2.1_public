@@ -322,8 +322,8 @@ data:
         "topic_watch": false,
         "broker_watch": false
       },
-      "brokers" : "TODO:443",
-      "topics": "alerts-noi-TODO",
+      "brokers" : "<STRIMZI_URL>:443",
+      "topics": "<ALERTS_NOI_TOPIC>",
       "kafka_client" : {
         "properties" : "/opt/IBM/tivoli/netcool/omnibus/java/conf/producer.properties",
         "java_sys_props" : "/opt/IBM/tivoli/netcool/omnibus/java/conf/kafkaClient_javaSys.properties"
@@ -334,7 +334,7 @@ data:
      org.apache.kafka.common.security.scram.ScramLoginModule required
      tokenauth="true"
      username="token"
-     password="TODO" 
+     password="<STRIMZI_PWD>" 
     };
   kafkatransport.properties: |-
     kafkaClientMode=PRODUCER

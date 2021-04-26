@@ -241,7 +241,7 @@ echo "  "
 echo "#----------------------------------------------------------------------------------------------------------------------------------------"
 echo "# If you get errors (error date or copying files log-model/training-...)"
 echo "#----------------------------------------------------------------------------------------------------------------------------------------"
-printForTrainingPod "python3 train_pipeline.pyc -p "log" -g "$appgroupid" -a "$appid" -v "$version"  --retrain '{\"start_time\":\"2021-03-30\",\"end_time\":\"2021-03-31\"}"
+printForTrainingPod "python3 train_pipeline.pyc -p "log" -g "$appgroupid" -a "$appid" -v "$version"  --retrain '{\"start_time\":\"2021-03-30\",\"end_time\":\"2021-03-31\"}'"
 printForTrainingPod "python3 deploy_model.pyc -p "log" -g "$appgroupid" -a "$appid" -v "$version""
 
 echo "  "

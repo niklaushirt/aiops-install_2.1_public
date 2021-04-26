@@ -125,8 +125,6 @@ header2Begin "Install Checks"
         #dockerRunning
         checkOpenshiftReachable
         checkKubeconfigIsSet
-        checkStorageClassExists
-        checkDefaultStorageDefined
         #checkRegistryCredentials
         
 
@@ -155,14 +153,14 @@ __output "    ------------------------------------------------------------------
 __output "    INSTALL PATH:              $INSTALL_PATH"
 __output "    ---------------------------------------------------------------------------------------------------------------------------"
 __output "  "
+
+
+printComponentsInstall
 header2End
 
 
 
 header1End "Initializing"
-
-
-
 
 
 
@@ -175,8 +173,12 @@ header1End "Initializing"
 
 header1Begin "Install Prerequisites"
   
-
+        header2Begin "Storage Checks"
+            checkStorageClassExists
+            checkDefaultStorageDefined
+        header2End
     
+
         header2Begin "Patch OCP Registry"    
             oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
         header2End

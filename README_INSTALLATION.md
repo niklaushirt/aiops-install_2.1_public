@@ -26,6 +26,7 @@ The file is [AIOps INTERACTIVE DEMO 2021](./AIOps_INTERACTIVE_DEMO_2021_V9.ppsx)
 |  22 Mar 2021 | Removed Sockshop  |   |
 |  30 Mar 2021 | New script to check install  |   |
 |  31 Mar 2021 | Clarifications based on Feedback  |   |
+|  26 Apr 2021 | Added Fyre install instrutions  |   |
 |   |   |   | 
 
 
@@ -91,6 +92,20 @@ You'll need:
 - 4x worker nodes Flavor `b3c.16x64` (so 16 CPU / 64 GB)
 
 You might get away with less if you don't install some components (Humio,...)
+
+
+### Storage Requirements
+
+
+Please make sure that an appropriate StorageClass is available (you will have to parametrize those as described in "Adapt configuration")
+
+- On IBM ROKS use: ibmc-file-gold-gid
+- On TEC use:      nfs-client
+- On FYRE use:     rook-cephfs 
+
+#### ❗Required for installations on IBM Fyre
+⚠️ **If you don't have a StorageClass, you can install Rook/Ceph with ./22_install_rook.sh.**
+            
 
 
 ### Tooling
@@ -164,11 +179,32 @@ At the same time Event Manager launches an automated Runbook to correct the prob
 
 ### Adapt configuration
 
-Adapt the 01_config-modules.sh file with the **Storage Class** (ibmc-file-gold-gid on ROKS) and the modules you want to install.
+Adapt the 01_config-modules.sh file with the desired parameters:
+
+**Storage Class**
+
+```bash
+
+# WAIOPS Storage Class (ibmc-file-gold-gid, rook-cephfs, nfs-client, ...)
+export WAIOPS_AI_MGR_STORAGE_CLASS_FILE=ibmc-file-gold-gid
+    
+
+# WAIOPS Large Storage Class (ibmc-file-gold-gid, rook-cephfs, nfs-client, ...)
+export WAIOPS_STORAGE_CLASS_LARGE_BLOCK=ibmc-file-gold-gid
+
+```
+
+**Optional Components**
+
+```bash
+# Install Humio
+export INSTALL_HUMIO=true
+
+```
 
 Make sure that you are logged into your cluster!
 
-### Start installation
+### Start Installation
 
 ```bash
 ./10_install_aiops.sh -t <PULL_SECRET_TOKEN>
@@ -176,20 +212,23 @@ Make sure that you are logged into your cluster!
 
 This will install:
 
+- Rook/Ceph (if enabled)
 - AI Manager
 - Event Manager (NOI)
 - Topology Manager (ASM) - Installed as part of Event Manager
 
 
-### Create NOI User that can see Topology
 
-* Log-in to NOI (you can get all login information by running `./80_get_logins.sh`)
-* Netcool WebGUI --> Top Right click on cog --> WebSphere Administrative Console
-* Users and Groups
-* Manage Groups --> Create Group "admin" 
-* Manage Users  --> Create User "demo" --> add to group admin
-* In Netcool WebGUI --> Top Right click on cog --> Group Roles --> Give all rights
+### Start Post-Installation
 
+When the installation has finished, run:
+
+```bash
+./11_install_aiops_post_install
+```
+
+If there are some errors, you can just re-run it a bit later when CP4WAIOPS is completely available.
+This is non descructive, so no worries to run it over and over again. 
 
 
 
@@ -321,8 +360,25 @@ kubectl apply -n kubetoy -f ./demo_install/kubetoy/kubetoy_all_in_one.yaml
 
 
 ---------------------------------------------------------------------------------------------------------------
-## NOI Webhooks
+## NOI 
 ------------------------------------------------------------------------------
+
+
+
+### Create NOI User that can see Topology
+
+* Log-in to NOI (you can get all login information by running `./80_get_logins.sh`)
+* Netcool WebGUI --> Top Right click on cog --> WebSphere Administrative Console
+* Users and Groups
+* Manage Groups --> Create Group "admin" 
+* Manage Users  --> Create User "demo" --> add to group admin
+* In Netcool WebGUI --> Top Right click on cog --> Group Roles --> Give all rights
+
+
+
+
+
+### NOI Webhooks
 
 Create Webhooks in NOI for Event injection and incident simulation for the Demo.
 
@@ -341,7 +397,7 @@ At this time it simulates:
 You have to define the Webhooks in Event Manager (NOI):
 
 
-### Humio Webhook
+#### Humio Webhook
 
 * Administration --> Integration with other Systems
 * Incoming --> New Integration
@@ -351,7 +407,7 @@ Name it `Humio` and jot down the WebHook URL.
 
 
 
-### Falco Webhook (optional)
+#### Falco Webhook (optional)
 
 * Administration --> Integration with other Systems
 * Incoming --> New Integration
@@ -380,7 +436,7 @@ Fill out the following fields and save:
 * Event type: `output_fields."k8s.ns.name"`
 
 
-### Git Webhook (optional)
+#### Git Webhook (optional)
 
 * Administration --> Integration with other Systems
 * Incoming --> New Integration
@@ -422,7 +478,7 @@ Fill out the following fields and save:
 
 
 
-### Metrics Webhook (optional)
+#### Metrics Webhook (optional)
 
 * Administration --> Integration with other Systems
 * Incoming --> New Integration
@@ -457,7 +513,7 @@ Fill out the following fields and save:
 * URL1: `ruleUrl` and `URL` 
 
 
-### Instana Webhook (optional)
+#### Instana Webhook (optional)
 
 * Administration --> Integration with other Systems
 * Incoming --> New Integration
@@ -489,14 +545,16 @@ Fill out the following fields and save:
 * URL1: `issue.link` and `Instana` 
 
 
-### Copy the Webhook URLS
+#### Copy the Webhook URLS
 
 Copy the Webhook URLs that you have jotted down and insert them into the `./demo/01_config.sh` file on the corresponding line.
 
 If you don't want a certain type of alert, just leave the `NETCOOL_WEBHOOK_XXX=not_configured`. This will suppress the simulation for this type.
 
 
-### Create NOI Menu item - Open URL
+## NOI Housekeeping
+
+#### Create NOI Menu item - Open URL
 
 in the Netcool WebGUI
 

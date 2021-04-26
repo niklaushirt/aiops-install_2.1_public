@@ -8,7 +8,6 @@
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-
 # Webhooks for Event injection
 export NETCOOL_WEBHOOK_HUMIO=not_configured
 
@@ -31,8 +30,11 @@ export appid_bookinfo=not_configured
 export appgroupid_robotshop=not_configured
 export appid_robotshop=not_configured
 
-
 # Kubetoy
+export appgroupid_sockshop=not_configured
+export appid_sockshop=not_configured
+
+# Sockshop
 export appgroupid_kubetoy=not_configured
 export appid_kubetoy=not_configured
 
@@ -189,7 +191,7 @@ get_sed(){
   if [ "${OS}" == "darwin" ]; then
       SED="gsed"
       if [ ! -x "$(command -v ${SED})"  ]; then
-      echo "This script requires $SED, but it was not found.  Perform \"brew install gnu-sed\" and try again."
+      __output "This script requires $SED, but it was not found.  Perform \"brew install gnu-sed\" and try again."
       exit
       fi
   fi

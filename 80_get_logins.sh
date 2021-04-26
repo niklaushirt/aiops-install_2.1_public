@@ -29,23 +29,74 @@ export LOG_PATH=""
 __getClusterFQDN
 __getInstallPath
 
+banner
+__output "***************************************************************************************************************************************************"
+__output "***************************************************************************************************************************************************"
+__output "***************************************************************************************************************************************************"
+__output "***************************************************************************************************************************************************"
+__output "  "
+__output "  Watson AIOps Passwords"
+__output "  "
+__output "***************************************************************************************************************************************************"
+__output "***************************************************************************************************************************************************"
+__output "***************************************************************************************************************************************************"
+__output "  "
+__output "  "
 
-__output "***************************************************************************************************************************************************"
-__output "***************************************************************************************************************************************************"
-__output "***************************************************************************************************************************************************"
-__output "***************************************************************************************************************************************************"
-__output "  "
-__output "  AI OPS Event Manager Passwords"
-__output "  "
-__output "***************************************************************************************************************************************************"
-__output "***************************************************************************************************************************************************"
-__output "***************************************************************************************************************************************************"
-__output "  "
-__output "  "
 
-    header1Begin "HUMIO Connection Details"
 
-        header2Begin "TEST"
+        header1Begin "Watson AIOps"
+
+        header2Begin "CP4WAIOPS"
+                __output "    AIOPS:"
+                __output "        URL:      https://zen-cpd-zen.$CLUSTER_NAME"
+                __output "        User:     admin"
+                __output "        Password: $(oc -n $WAIOPS_AI_MGR_NAMESPACE get secret admin-user-details -o jsonpath='{.data.initial_admin_password}' | base64 -d)"
+
+        header2End
+
+
+        header2Begin "Event Manager"
+            __output "---------------------------------------------------------------------------------------------"
+            __output "---------------------------------------------------------------------------------------------"
+
+            __output "---------------------------------------------------------------------------------------------"
+            __output "    ICPADMIN USER:"
+            __output "        User:     icpadmin"
+            __output "        Password: $(kubectl get secret demo-noi-icpadmin-secret -o json -n $WAIOPS_EVENT_MGR_NAMESPACE| grep ICP_ADMIN_PASSWORD  | cut -d : -f2 | cut -d '"' -f2 | base64 -d;)"
+
+            __output "---------------------------------------------------------------------------------------------"
+            __output "    SMADMIN USER:"
+            __output "        User:     smadmin"
+            __output "        Password: $(kubectl get secret demo-noi-was-secret -o json -n $WAIOPS_EVENT_MGR_NAMESPACE| grep WAS_PASSWORD | cut -d : -f2 | cut -d '"' -f2 | base64 -d;)"
+            
+            __output "---------------------------------------------------------------------------------------------"
+            __output "    ASM TOPOLOGY USER:"
+            __output "        User:     demo-noi-topology-noi-user"
+            __output "        Password: $(kubectl get secret demo-noi-topology-asm-credentials -n $WAIOPS_EVENT_MGR_NAMESPACE -o=template --template={{.data.password}} | base64 -D)"
+            __output " "
+            __output " "
+
+            __output "---------------------------------------------------------------------------------------------"
+            __output "---------------------------------------------------------------------------------------------"
+
+            __output "    Netcool (NOI):"
+            __output "        URL:     https://netcool.demo-noi.$CLUSTER_NAME/"
+
+
+            __output "---------------------------------------------------------------------------------------------"
+            __output "    WebGUI:"
+            __output "        URL:     https://netcool.demo-noi.$CLUSTER_NAME:443/ibm/console"
+
+
+
+            __output "---------------------------------------------------------------------------------------------"
+            __output "    WAS Console:"
+            __output "        URL:     https://was.demo-noi.$CLUSTER_NAME:443/ibm/console"
+        header2End
+
+
+       header2Begin "Humio"
 
             
                 __output "---------------------------------------------------------------------------------------------"
@@ -56,68 +107,23 @@ __output "  "
                 __output "        User:     developer"
                 __output "        Password: $(kubectl get secret developer-user-password -n humio-logging -o=template --template={{.data.password}} | base64 -D)"
         header2End
-    header1End "HUMIO Connection Details"
 
-    header1Begin "AIOPS Event Manager Connection Details"
+        header2Begin "OCP Connection Details"
+                
+                    __output "---------------------------------------------------------------------------------------------"
+                    __output "---------------------------------------------------------------------------------------------"
 
-        header2Begin "TEST"
+                    DEMO_TOKEN=$(oc -n default get secret $(oc get secret -n default |grep -m1 demo-admin-token|awk '{print$1}') -o jsonpath='{.data.token}'|base64 -d)
+                    DEMO_URL=$(oc status|grep -m1 "In project"|awk '{print$6}')
 
-            
-                __output "---------------------------------------------------------------------------------------------"
-                __output "---------------------------------------------------------------------------------------------"
+                    __output "        URL:     $DEMO_URL"
+                    __output "        Token:   $DEMO_TOKEN"
+                    __output ""
+                    __output ""
+                    __output ""
 
-                __output "    AIOPS:"
-                __output "        https://netcool.demo-noi.$CLUSTER_NAME:443/"
-                __output "        User:     icpadmin"
-                __output "        Password: $(kubectl get secret demo-noi-icpadmin-secret -o json -n $WAIOPS_EVENT_MGR_NAMESPACE| grep ICP_ADMIN_PASSWORD  | cut -d : -f2 | cut -d '"' -f2 | base64 -d;)"
-
-
-
-                __output "---------------------------------------------------------------------------------------------"
-                __output "    WebGUI:"
-                __output "        https://netcool.demo-noi.$CLUSTER_NAME:443/ibm/console"
-                __output "        User:     icpadmin"
-                __output "        Password: $(kubectl get secret demo-noi-icpadmin-secret -o json -n $WAIOPS_EVENT_MGR_NAMESPACE| grep ICP_ADMIN_PASSWORD  | cut -d : -f2 | cut -d '"' -f2 | base64 -d;)"
-
-
-
-                __output "---------------------------------------------------------------------------------------------"
-                __output "    WAS Console:"
-                __output "        https://was.demo-noi.$CLUSTER_NAME:443/ibm/console"
-                __output "        User:     smadmin"
-                __output "        Password: $(kubectl get secret demo-noi-was-secret -o json -n $WAIOPS_EVENT_MGR_NAMESPACE| grep WAS_PASSWORD | cut -d : -f2 | cut -d '"' -f2 | base64 -d;)"
-
-
-
-                __output "---------------------------------------------------------------------------------------------"
-                __output "    Impact GUI:"
-                __output "        https://impact.demo-noi.$CLUSTER_NAME:443/ibm/console"
-                __output "        User:     impactadmin"
-                __output "        Password: $(kubectl get secret demo-noi-impact-secret -o json -n $WAIOPS_EVENT_MGR_NAMESPACE| grep IMPACT_ADMIN_PASSWORD | cut -d : -f2 | cut -d '"' -f2 | base64 -d;)"
-
-
-
-                __output "---------------------------------------------------------------------------------------------"
-                __output "    Impact Servers:"
-                __output "        https://nci-0.demo-noi.$CLUSTER_NAME:443/nameserver/services"
-                __output "        User:     impactadmin"
-                __output "        Password: $(kubectl get secret demo-noi-impact-secret -o json -n $WAIOPS_EVENT_MGR_NAMESPACE| grep IMPACT_ADMIN_PASSWORD | cut -d : -f2 | cut -d '"' -f2 | base64 -d;)"
-
-
-
-
-                __output "---------------------------------------------------------------------------------------------"
-                __output "    ASM TOPOLOGY USER:"
-                __output "        https://nci-0.demo-noi.$CLUSTER_NAME:443/nameserver/services"
-                __output "        User:     demo-noi-topology-noi-user"
-                __output "        Password: $(kubectl get secret demo-noi-topology-asm-credentials -n noi -o=template --template={{.data.password}} | base64 -D)"
-
-
-
+                    __output "        Login:   oc login --token=$DEMO_TOKEN --server=$DEMO_URL"
 
 
         header2End
-    header1End "AIOPS Event Manager Connection Details"
-
-
 

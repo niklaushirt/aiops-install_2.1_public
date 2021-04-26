@@ -3,6 +3,8 @@
 
 ## Prerequisites
 
+- [ ] Check/Install StorageClass
+
 - [ ] Install Tooling
  
 - [ ] Get the scripts and code from GitHub
@@ -12,8 +14,9 @@
 - [ ] Adapt install configuration
  
 - [ ] Start installation
+
+- [ ] Start Post-Installation
  
-- [ ] Create NOI User that can see Topology
 
 ## Demo Apps in AI Manager
 - [ ] Create Dummy Slack integration
@@ -32,20 +35,31 @@
 	- [ ] Install RobotShop generate load
    
    
-## NOI Webhooks
-- [ ] Humio Webhook
+## NOI
+
+- [ ] Create NOI User that can see Topology
+
+- [ ] NOI Webhooks
+
+	- [ ] Humio Webhook
+	 
+	- [ ] Falco Webhook (optional)
+	 
+	- [ ] Git Webhook (optional)
+	 
+	- [ ] Metrics Webhook (optional)
+	 
+	- [ ] Instana Webhook (optional)
+	 
+	- [ ] Copy the Webhook URLS into 01_config.sh
  
-- [ ] Falco Webhook (optional)
+- [ ] NOI Housekeeping
  
-- [ ] Git Webhook (optional)
- 
-- [ ] Metrics Webhook (optional)
- 
-- [ ] Instana Webhook (optional)
- 
-- [ ] Copy the Webhook URLS into 01_config.sh
- 
-- [ ] Create NOI Menu item
+	- [ ] Create NOI Menu item - Open URL
+
+	- [ ] Create NOI Menu item - Delete Events
+
+
 
 ## HUMIO
 - [ ] Install HUMIO

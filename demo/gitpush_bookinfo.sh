@@ -84,7 +84,7 @@ oc delete pod -n bookinfo $(oc get po -n bookinfo|grep ratings-v1|awk '{print$1}
 echo "."
 
 
-#sleep 60
+sleep 30
 
 
 

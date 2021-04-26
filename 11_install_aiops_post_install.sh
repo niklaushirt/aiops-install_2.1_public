@@ -190,30 +190,46 @@ header1Begin "Install Humio"
 
             kubectl apply -n humio-logging -f ./tools/4_integrations/humio/humio-route.yaml
 
+            kubectl delete -n humio-logging secret developer-user-password
+            kubectl apply -n humio-logging -f ./tools/4_integrations/humio/change-humio-dev-pwd.yaml
+            kubectl delete -n humio-logging pod humio-instance-humio-core-0
+
+            __output " ✅ HUMIO Installed"
+            __output "  ⚠️ Please check the documentation in order to create the Fluentbit agents!"
+
+
         header2End
-
-
-        header2Begin "Install FluentBit"
-            oc adm policy add-scc-to-user privileged -n humio-logging -z humio-fluentbit-fluentbit-read
-            export INGEST_TOKEN=xxx
-            helm install humio-fluentbit humio/humio-helm-charts \
-            --namespace humio-logging \
-            --set humio-fluentbit.token=$INGEST_TOKEN \
-            --values ./tools/4_integrations/humio/humio-agent.yaml
-            kubectl patch DaemonSet humio-fluentbit-fluentbit -n humio-logging -p '{"spec": {"template": {"spec": {"containers": [{"name": "humio-fluentbit","image": "fluent/fluent-bit:1.4.2","securityContext": {"privileged": true}}]}}}}' --type=merge
-            kubectl apply -n humio-logging -f ./tools/4_integrations/humio/FluentbitDaemonSet_DEBUG.yaml
-
-
-            kubectl delete -n humio-logging pods -l k8s-app=humio-fluentbit
-        header2End
-
-       
+      
 
     else
-        __output "     ❌ Common Services not activated... Skipping"
+        __output "     ❌ Humio not activated... Skipping"
     fi
 
 header1End "Housekeeping"
+
+
+
+
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Patch Ingress 
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+header1Begin "Patch Ingress"
+
+            endpointPublishingStrategy=$(oc get ingresscontroller default -n openshift-ingress-operator -o yaml | grep HostNetwork || true) 
+
+            if [[ $endpointPublishingStrategy =~ "HostNetwork" ]]; 
+            then
+                header2Begin "Patch Ingress"
+                    oc patch namespace default --type=json -p '[{"op":"add","path":"/metadata/labels","value":{"network.openshift.io/policy-group":"ingress"}}]'
+                    __output "     ✅ Ingress successfully patched"
+                header2End
+            else
+                __output "     ⭕ Not needed... Skipping"
+            fi
+header1End "Patch Ingress"
+
 
 
 
@@ -232,7 +248,16 @@ header1End "Create Strimzi Route"
 
 
 
+header1Begin "Create Topology Routes"
 
+    header2Begin "Create Topology Merge Route"
+            oc create route passthrough topology-merge -n $WAIOPS_NAMESPACE --service=evtmanager-topology-merge --port=merge-api
+            ACT_ROUTE=$(oc get route topology-merge -o jsonpath='{ .spec.host}')
+
+           __output "$ACT_ROUTE/1.0/merge/swagger"
+    header2End
+
+header1End "Create Strimzi Route"
 
 
 
@@ -285,11 +310,15 @@ header1Begin "Housekeeping"
         header2End
 
         header2Begin "Creaete OCP User"
-            kubectl create serviceaccount -n zen demo-admin
-            oc create clusterrolebinding test-admin --clusterrole=cluster-admin --serviceaccount=zen:demo-admin
-
             kubectl create serviceaccount -n default demo-admin
-            oc create clusterrolebinding default-admin --clusterrole=cluster-admin --serviceaccount=default:demo-admin
+            oc create clusterrolebinding test-admin --clusterrole=cluster-admin --serviceaccount=default:demo-admin
+
+
+            DEMO_TOKEN=$(oc -n default get secret $(oc get secret -n default |grep -m1 demo-admin-token|awk '{print$1}') -o jsonpath='{.data.token}'|base64 -d)
+            DEMO_URL=$(oc status|grep -m1 "In project"|awk '{print$6}')
+            echo  "oc login --token=$DEMO_TOKEN --server=$DEMO_URL"
+
+            __output "oc login --token=$DEMO_TOKEN --server=$DEMO_URL"
 
         header2End
 

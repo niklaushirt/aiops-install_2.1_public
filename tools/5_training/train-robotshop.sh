@@ -9,8 +9,8 @@
 
 # Name of the Application (bookinfo, kubetoy, robotshop)
 export application_name=robotshop
-export appgroupid=pup6bzes
-export appid=38iions5
+export appgroupid=j9aw0vxl
+export appid=flotlnkf
 export version=1
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

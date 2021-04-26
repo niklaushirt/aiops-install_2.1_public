@@ -21,8 +21,9 @@
          # Install AIOPS AI Manager 
         export INSTALL_WAIOPS_MGR=true
 
-        # WAIOPS Storage Class (ibmc-file-gold-gid, nfs-client, ...)
-        export WAIOPS_AI_MGR_STORAGE_CLASS_FILE=ibmc-file-gold-gid
+        # WAIOPS Storage Class (ibmc-file-gold-gid, rook-cephfs, nfs-client, ...)
+        export WAIOPS_AI_MGR_STORAGE_CLASS_FILE=rook-cephfs
+        #export WAIOPS_AI_MGR_STORAGE_CLASS_FILE=ibmc-file-gold-gid
         #export WAIOPS_AI_MGR_STORAGE_CLASS_FILE=nfs-client
 
 
@@ -54,7 +55,7 @@
          # Install Separate LDAP service
         export INSTALL_SEPARATE_LDAP=false
 
-        # Install Humio and Fluentbit (not implemented yet)
+        # Install Humio
         export INSTALL_HUMIO=true
 
 

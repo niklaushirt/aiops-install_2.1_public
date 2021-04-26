@@ -27,7 +27,7 @@ humio-core:
     cp-kafka:
       persistence:
         enabled: true
-        size: 50Gi
+        size: 200Gi
 
   # Custom JVM memory settings (these will depend on resources defined)
   jvm:
